@@ -1,3 +1,10 @@
+// Hash table from Hanson's *C Interfaces and Implementations*, adapted
+
+// Use this for global variables and table values.
+
+// Key difference from Hanson: a missing entry is equivalent to `nil`,
+// so VTable_get always succeeds.
+
 #ifndef VTABLE_INCLUDED
 #define VTABLE_INCLUDED
 
