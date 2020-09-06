@@ -21,6 +21,7 @@ for f in io.arg_files(arg) do
     elseif l:find '%$qcheck/qcheck.cm' then
       io.write('/home/nr/net/qcheck/qcheck.mlb')
     elseif not l:find 'group is' then
+      l = l:gsub('%(%*.-%*%)', '')
       io.write((l:gsub('%.cm%s*$', '.mlb')), '\n')
     end
   end
