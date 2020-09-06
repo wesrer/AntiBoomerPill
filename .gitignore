@@ -24,6 +24,7 @@
 /src/vscheme/vschemem
 /src/vscheme/vscheme
 /build/*.d
+/build/*
 /bin/svm
 /bin/svm-dis
 /bin/svm-opcodes
