@@ -1,3 +1,9 @@
+// Implementation of the extensible printer.
+
+// This code is gnarly.  If you want to understand it, you're better
+// off consulting the Supplement to *Programming Languages: Build,
+// Prove, and Compare.*  There you'll find some explanations.
+
 #include <assert.h>
 #include <stdbool.h>
 

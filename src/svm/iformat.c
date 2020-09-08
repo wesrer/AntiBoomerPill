@@ -1,3 +1,8 @@
+// Encoding functions for instructions
+
+// This code is all special cases of the `Bitpack` module that
+// students implement in COMP 40.  Nothing to see here.  Move along.
+
 #include <assert.h>
 
 #include "iformat.h"

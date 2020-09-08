@@ -1,7 +1,12 @@
 // The virtual-machine heap, eventually to be garbage-collected.
 
-// Used directly to allocate blocks, functions, and closures.
-// Used indirectly by functions the create VMString, VTable_T, and VSeq_T.
+// Module 1 onward: Use for any data structure that is allocated by
+// a VM instruction: all those structures are eventually supposed to be 
+// garbage collected.  
+
+// This interface is to be used directly to allocate blocks,
+// functions, and closures.  It is also used indirectly by functions
+// the create VMString, VTable_T, and VSeq_T.
 
 #ifndef VMHEAP_INCLUDED
 #define VMHEAP_INCLUDED

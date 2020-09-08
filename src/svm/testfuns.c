@@ -1,5 +1,8 @@
 // Builds a few functions for testing.  See description in testfuns.h
 
+// Module 2: These functions could be used as a model for code 
+// to run in your loader.
+
 #include "testfuns.h"
 
 #include "iformat.h"

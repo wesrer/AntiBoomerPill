@@ -1,3 +1,8 @@
+// Implementation of the VM heap
+
+// Modules 1 to 10: Nothing to see here.
+// Modules 11 and 12: This code will be the focus.
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,3 +1,11 @@
+// Values and functions promised in value.h
+
+// If you want to see how the various forms of equality test work,
+// this file might be worth poking at.  Otherwise it does what it 
+// says on the tin.
+
+// At some point it will be necessary to fix `hashvalue`.
+
 #include <assert.h>
 
 #include "value.h"
@@ -13,34 +21,6 @@ uint32_t hashvalue(Value v) {
   return 0;
 }
 
-#if 0
-
-static long int hashindex (TObject *ref)
-{
-  // ALERT!  If objects in the heap are going to move,
-  // then their addresses will not do as hash values.
-  // Perhaps each object gets a unique ID? 
-  long int h;
-  switch (ttype(ref)) {
-    case LUA_T_NUMBER:
-      h = (long int)nvalue(ref); break;
-    case LUA_T_STRING: case LUA_T_USERDATA:
-      h = tsvalue(ref)->hash; break;
-    case LUA_T_FUNCTION:
-      h = (IntPoint)ref->value.tf; break;
-    case LUA_T_CFUNCTION:
-      h = (IntPoint)fvalue(ref); break;
-    case LUA_T_ARRAY:
-      h = (IntPoint)avalue(ref); break;
-    default:
-      lua_error ("unexpected type to index table");
-      h = 0;  /* UNREACHEABLE */
-  }
-  if (h < 0) h = -h;
-  return h;
-}
-
-#endif
 
 bool eqvalue(Value v1, Value v2) { // XXX will not work for hashing!
   if (v1.tag != v2.tag)

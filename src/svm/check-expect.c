@@ -1,3 +1,11 @@
+// Functions for unit testing
+
+// These implementations are adapted from my book *Programming
+// Languages: Build, Prove, and Compare.*  The fact of having
+// Check and Expect as VM instructions is extremely interesting,
+// but the implementations themselves are not interesting.
+// You needn't bother with them.
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>

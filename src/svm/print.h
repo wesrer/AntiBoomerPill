@@ -1,6 +1,7 @@
 // Extensible printer, as in PL: Build, Prove, Compare
 
-// Useful for debugging: call print() or fprint() with %v, %n, others
+// Useful for debugging: call print() or fprint() with %v, %n, others.
+// Worth knowing about from module 1 onward.
 
 
 #ifndef PRINT_INCLUDED

@@ -1,4 +1,7 @@
-// -*- c-indent-level: 4; c-basic-offset: 4 -*-
+// Memory management and literal addition for VMState
+
+// You'll complete this file as part of module 1
+
 
 #define _POSIX_C_SOURCE 200809L
 
@@ -26,6 +29,9 @@ VMState newstate(void) {
 int literal_slot(VMState state, Value literal) {
     (void)state; // suppress compiler warnings
     (void)literal;
-    // return a slot containing the literal, updating literal pool if needed
+    // Return a slot containing the literal, updating literal pool if needed.
+    // For module 1, you can get away with putting the literal in slot 0
+    // and returning 0.  For module 2, you'll need something slightly
+    // more sophisticated.
     assert(0);
 }

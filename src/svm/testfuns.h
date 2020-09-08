@@ -5,7 +5,8 @@
 
 // The implementation is worth looking at, since it has simple
 // examples of functions that encode instructions, allocate
-// strings, and create VM functions. 
+// strings, and create VM functions.  That's what you'll be doing
+// in module 2.
 
 // These functions are called from `svmtest.c`.
 

@@ -1,3 +1,7 @@
+// Representation of all VM values.
+
+// This is the core of the VM, used heavily from module 1 on.
+
 #ifndef VALUE_INCLUDED
 #define VALUE_INCLUDED
 

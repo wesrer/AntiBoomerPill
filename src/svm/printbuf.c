@@ -1,3 +1,10 @@
+// Buffering code
+
+// This is classic C memory hacking, not wildly different from the 
+// buffering code in vmstring.c.  I've written similar code many times.
+// Did you know that the IBM PL/I optimizing compiler was said to
+// contain seven different sort routines?
+
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>

@@ -1,3 +1,9 @@
+// State of a VM, and functions to allocate, deallocate, add a literal
+
+// This one's the essential part of module 1.
+// You'll define the key representation, `struct VMState`,
+// and you'll use it in your `vmrun` function.
+
 #ifndef VMSTATE_INCLUDED
 #define VMSTATE_INCLUDED
 

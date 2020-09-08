@@ -6,7 +6,8 @@
 // longer meets your needs.
 
 // The main idea here is to make it very efficient to use short
-// strings as keys in hash tables.
+// strings as keys in hash tables.  That's important to us because
+// that's how we handle global variables.
 
 #ifndef VMSTRING_INCLUDED
 #define VMSTRING_INCLUDED
@@ -29,28 +30,51 @@ typedef struct VMString {
 static inline size_t Vmstring_objsize(size_t len) {
   // size of a string object of the given length
   return sizeof(struct VMString) + (len + 1) * sizeof(char);
+  // accounts for the hidden terminating '\0'
 }
 
 
-uint32_t Vmstring_hash(const char *s, size_t len);
-uint32_t Vmstring_hashlong(VMString s); // done on demand for long string?
+//// initialization and finalization
 
-extern void Vmstring_init(void);
+extern void Vmstring_init(void);   // call before any other function in this interface
 extern void Vmstring_finish(void); // recover for valgrind
 
+
+//// string creation
+
+// Strings can be created in two ways: from an existing sequence of bytes,
+// or by accumulating bytes into a buffer.
+
+
 VMString Vmstring_new(const char *p, size_t length);
-  // interned only if short
-VMString Vmstring_newc(const char *p);
-  // interned only if short
+  // Create string from sequence of bytes, which may include zeros.
+  // Interned only if short.
+
+VMString Vmstring_newc(const char *s);
+  // Create string from a null-terminated C string.
+  // Interned only if short.
 
 VMString Vmstring_newlong(const char *p, size_t len);
-  
+  // Create sequence of bytes; force a long string.  
+
 
 typedef struct StringBuffer *StringBuffer;
 
 StringBuffer Vmstring_buffer(size_t length);
+  // allocate a new, empty buffer
+
 void Vmstring_putc(StringBuffer p, char c);
+  // add a character to a buffer
+
 VMString Vmstring_of_buffer(StringBuffer *bp);
   // interns the contents of the buffer and frees its memory
+
+
+
+//// hashing
+
+uint32_t Vmstring_hash(const char *s, size_t len);
+uint32_t Vmstring_hashlong(VMString s); // done on demand for long string?
+
 
 #endif

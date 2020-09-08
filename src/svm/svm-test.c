@@ -1,3 +1,9 @@
+// Main program; tests a few SVM instructions
+
+// Module 1: The easy way to test your code.
+// Module 2 onward: This file will be obsolete; use `svm.c` instead.
+
+
 #include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>

@@ -1,3 +1,7 @@
+// Implementation of hash table, modified from Hanson CII
+
+// Will have to be looked at in module 12, but not until then.
+
 #include <limits.h>
 #include <stddef.h>
 #include <assert.h>

@@ -1,5 +1,9 @@
 ////// formatting of the instruction word; encoding and decoding
 
+// Module 1: Use the decoding functions.
+// Module 2: Use the encoding functions.
+// They are all special cases of the `Bitpack` interface that students
+// implement in COMP 40.
 
 #ifndef IFORMAT_INCLUDED
 #define IFORMAT_INCLUDED

@@ -1,5 +1,9 @@
+// Sophisticated strings for the VM
 
-// based on Lua strings (MIT license)
+// I'm planning to sweep this one under the rug.  There's a lot going on
+// here, but I want to focus on other issues.
+
+// The code is based on Lua strings, OK as per their MIT license.
 
 #include <assert.h>
 #include <limits.h>
