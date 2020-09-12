@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <stdbool.h>
 
+#include "name.h"
 #include "print.h"
 #include "value.h"
 #include "vmstring.h"
@@ -91,6 +92,11 @@ void printpointer(Printbuf output, va_list_box *box) {
 }
 
 
+void printname(Printbuf output, va_list_box *box) {
+    Name np = va_arg(box->ap, Name);
+    bufputs(output, np == NULL ? "<null>" : nametostr(np));
+}
+
 void printchar(Printbuf output, va_list_box *box) {
     int c = va_arg(box->ap, int);
     bufput(output, c);
@@ -100,6 +106,7 @@ void printchar(Printbuf output, va_list_box *box) {
 void installprinters(void) {
     installprinter('c', printchar);
     installprinter('d', printdecimal);
+    installprinter('n', printname);
     installprinter('s', printstring);
     installprinter('v', bprintvalue);
     installprinter('%', printpercent);

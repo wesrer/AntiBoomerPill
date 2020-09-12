@@ -35,3 +35,8 @@ int literal_slot(VMState state, Value literal) {
     // more sophisticated.
     assert(0);
 }
+
+Value literal_value(VMState state, unsigned index) {
+  (void) state; (void) index; // replace with real code
+  assert(0);
+}

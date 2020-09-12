@@ -11,6 +11,7 @@
 typedef enum opcode { 
                       Halt, // R0
                       Print, // R1
+                      LoadLiteral, // R1LIT
                       Check, Expect, // R1LIT
                       Unimp, // stand-in for opcodes not yet implemented
 } Opcode;

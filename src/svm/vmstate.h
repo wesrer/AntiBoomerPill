@@ -22,4 +22,9 @@ int literal_slot(VMState state, Value literal);
   // return index of literal in `literals`, adding if needed
   // (at need, can be postponed to module 2)
 
+Value literal_value(VMState state, unsigned index);
+  // Return the value at the given index. *Not* intended 
+  // for use in `vmrun`, which you don't want to pay the 
+  // overhead of a function call.
+
 #endif /* VMSTATE_INCLUDED */
