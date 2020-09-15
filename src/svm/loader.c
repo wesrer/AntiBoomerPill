@@ -24,6 +24,7 @@
 #include "loader.h"
 #include "itable.h"
 #include "tokens.h"
+#include "svmdebug.h"
 #include "vmstate.h"
 #include "vmheap.h"
 #include "vmstring.h"
@@ -65,48 +66,63 @@ static struct VMFunction *loadfun(VMState vm, int arity, int count, FILE *input)
 }
 
 
-//// the exported functions
+//// module loading, with helper function
 
-struct VMFunction *loadmodule(VMState vm, FILE *vofile) {
+static bool has_input(FILE *fd) {
+  int c = getc(fd);
+  if (c == EOF) {
+    return false;
+  } else {
+    ungetc(c, fd);
+    return true;
+  }
+}
+
+
+static struct VMFunction *loadmodule(VMState vm, FILE *vofile) {
+  // precondition: `vofile` has input remaining
+
   static Name dotloadname, modulename;
   if (dotloadname == NULL) {
     dotloadname = strtoname(".load");
     modulename  = strtoname("module");
   }
 
+  // read a line from `vofile` and tokenize it
   char *buffer = NULL;
   size_t bufsize;
   if (getline(&buffer, &bufsize, vofile) < 0) {
     // end of file, spec calls for NULL to be returned
-    free(buffer);
-    return NULL;
+    assert(false);
   }
+  Tokens alltokens = tokens(buffer);
+  Tokens tokens_left = alltokens;
 
-  Tokens directive = tokens(buffer);
-  Tokens directive_start = directive; // hang onto this so we can free it
-
-  // parse ".load module <count>"
+  // parse the tokens; expecting ".load module <count>"
   Name n;
-  n = tokens_get_name(&directive, buffer); // removes token from directive
+  n = tokens_get_name(&tokens_left, buffer); // removes token from tokens_left
   assert(n == dotloadname);
-  n = tokens_get_name(&directive, buffer);
+  n = tokens_get_name(&tokens_left, buffer);
   assert(n == modulename);
-  uint32_t count = tokens_get_int(&directive, buffer);
-  assert(directive == NULL); // that must be the last token
+  uint32_t count = tokens_get_int(&tokens_left, buffer);
+  assert(tokens_left == NULL); // that must be the last token
 
   free(buffer); // done with the input line and its tokens
-  free_tokens(&directive_start);
+  free_tokens(&alltokens);
 
-  return loadfun(vm, 0, count, vofile); // load the module
+  return loadfun(vm, 0, count, vofile); // read the remaining instructions
 }
 
-Modules loadmodules(VMState vm, FILE *input) {
-  struct VMFunction *module = loadmodule(vm, input);
-  if (module == NULL)
+
+Modules loadmodules(VMState vm, FILE *vofile) {
+  if (has_input(vofile)) {
+    struct VMFunction *module = loadmodule(vm, vofile); // load the first
+    return mkModules(module, loadmodules(vm, vofile)); // and iterate
+  } else {
     return NULL;
-  else
-    return mkModules(module, loadmodules(vm, input));
+  }
 }
+    
 
 ///// utility functions
 

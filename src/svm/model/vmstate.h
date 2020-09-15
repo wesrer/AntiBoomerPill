@@ -11,9 +11,30 @@
 
 #include "value.h"
 
+#ifndef TINYVM // production
+
+#define NREGS 256
+#define LITSIZE 10000  // could go up to 65536
+
+#else  // easier to read in debugger
+
+#define NREGS 10
+#define LITSIZE 10
+
+#endif
+
 typedef struct VMState *VMState;
 
-// ... define the struct type here ...
+struct VMState {
+    struct VMFunction *running; // currently running function
+    int pc;               // index of instruction about to run
+    struct VTable_T *globals;
+    Value registers[NREGS];
+    Value literals[LITSIZE];
+    int nlits;            // number of literal slots in use
+};
+
+// unused blocks in struct OK, only a small number will ever be allocated
 
 VMState newstate(void);       // allocate and initialize (to empty)
 void freestatep(VMState *sp); // deallocate

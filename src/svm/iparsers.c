@@ -93,7 +93,7 @@ static void initnames(void) {
 
 
 Instruction parseR1LIT(VMState vm, Opcode opcode, Tokens operands, unsigned *maxreg) {
-  initnames();
+  initnames(); // before comparing names, you must call this function
   (void)vm; (void)opcode; (void)operands; (void)maxreg; // replace with real code!
   assert(0);
 }

@@ -20,23 +20,19 @@
 #include "vmstate.h"
 
 
-struct VMFunction *loadmodule(VMState vm, FILE *input);
-  // Load the first module, if any from the given input file.
-  // If there is no more input or all lines are blank, return NULL.
-  // Otherwise read and load one module.
-  // Any bad or unexpected input causes a checked run-time error.
-  //
-  // Any literals in the module are added to the given VM's literal pool.
-  //
-  // The return value is allocated with `vmalloc` and will be garbage-collected.
-
 typedef struct modules {
   struct VMFunction *module;
   struct modules *next;
 } *Modules;
 
 Modules loadmodules(VMState vm, FILE *input); 
-  // Load all the modules present in a given file.
+  // Load all the modules from the given input file.
+  // If there is no more input or all lines are blank, return NULL.
+  // Otherwise read and all the modules.
+  // Any bad or unexpected input causes a checked run-time error.
+  //
+  // Any literals in the modules are added to the given VM's literal pool.
+  //
   // The spine of the result is allocated with malloc and must be freed;
   // the individual modules are allocated with vmalloc and must be GC'ed.
 
