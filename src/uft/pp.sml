@@ -1,3 +1,7 @@
+(* Part of the Pretty Printer *)
+
+(* You can ignore this *)
+
 structure PP : PP = struct
   datatype break = OPTIONAL | CONNECTED | FORCED
   datatype pretty = BEGIN 

@@ -1,3 +1,7 @@
+(* Part of the Pretty Printer *)
+
+(* You can ignore this *)
+
 structure NewlinePPCost = struct
   type cost = int
   val initialCost = 0

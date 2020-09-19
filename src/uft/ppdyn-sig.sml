@@ -1,3 +1,7 @@
+(* Part of the Pretty Printer *)
+
+(* You can ignore this *)
+
 signature PP_COST = sig
   type cost
   val initialCost : cost (* cost of empty output *)

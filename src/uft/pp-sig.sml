@@ -1,3 +1,7 @@
+(* Part of the Pretty Printer *)
+
+(* You can ignore this *)
+
 signature PP = sig
   datatype break = OPTIONAL | CONNECTED | FORCED
   datatype pretty = BEGIN 
