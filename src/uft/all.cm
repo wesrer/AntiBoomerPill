@@ -6,7 +6,6 @@ group is
   impossible.cm   (* analog of assertion failure *)
 
   env.sml         (* environment abstraction *)
-  set.sml         (* set abstraction *)
 
   (***** all the languages we'll eventually translate ****)
 
