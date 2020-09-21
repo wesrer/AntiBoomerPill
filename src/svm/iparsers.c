@@ -77,7 +77,7 @@ Instruction parseR0I24(VMState vm, Opcode opcode, Tokens operands, unsigned *max
 }
 
 
-static Name truename, falsename, nilname, emptyname, stringname, functionname;
+static Name truename, falsename, nilname, emptyname, stringname;
 
 static void initnames(void) {
   if (truename == NULL) {
@@ -86,7 +86,6 @@ static void initnames(void) {
     nilname      = strtoname("nil");
     emptyname    = strtoname("emptylist");
     stringname   = strtoname("string");
-    functionname = strtoname("function");
   }
 }
 
