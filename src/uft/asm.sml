@@ -11,7 +11,7 @@ structure AssemblyCode = struct
     = OBJECT_CODE of ObjectCode.instr                   (* an object-code instruction *)
     | LOADFUNC    of ObjectCode.reg * int * instr list  (* body is assembly code *)
 
-    | LABEL         of string
+    | DEFLABEL      of string
     | GOTO_LABEL    of string
     | IF_GOTO_LABEL of ObjectCode.reg * string
 end
