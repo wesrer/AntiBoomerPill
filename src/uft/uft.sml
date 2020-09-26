@@ -36,10 +36,9 @@ struct
 
   val VS_of_file : instream -> AssemblyCode.instr list error =
     lines
-    >>> map (AsmLex.tokenize  (* token list error *)
-            >=>  AsmParse.parse       (* instr error *)
-           )
-    >>> Error.list
+    >>> map AsmLex.tokenize  (* token list error list *)
+    >>> Error.list           (* token list list error *)
+    >=> AsmParse.parse       (* instr list error *)    
 
 
   (**** functions for emitting translated code ****)

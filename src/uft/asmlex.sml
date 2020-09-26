@@ -17,6 +17,7 @@ structure AsmToken = struct
                  | NAME   of string
                  | STRING of string
                  | INT of int
+                 | EOL (* end of line *)
 end
 
 structure AsmLex :> sig
@@ -60,6 +61,7 @@ struct
     | unparse (NAME s)      = s  (* dodgy? *)
     | unparse (STRING s)    = quoteString s
     | unparse (INT s)       = String.map ceeMinus (Int.toString s)
+    | unparse (EOL)         = "<eol>"
 
   structure L = MkListProducer (val species = "lexer"
                                 type input = char
@@ -141,6 +143,7 @@ struct
   fun escape #"n" = Error.OK #"\n"
     | escape #"\"" = Error.OK #"\""
     | escape #"\\" = Error.OK #"\\"
+    | escape #"?" = Error.OK #"?"
     | escape c = Error.ERROR ("Escape code \\" ^ str c ^ " is undefined")
 
   val escapedChar =  char #"\\" >> L.check (escape <$> one)
@@ -176,7 +179,9 @@ struct
     <|> char dq >> L.perror "unterminated quoted string"
     <|> (name o implode) <$> many1 (sat (not o isDelim) one)
 
-  val tokenize = L.produce (whitespace >> many (token <~> whitespace)) o explode
+  fun manyEOL p = L.fix' (fn manyp => curry op :: <$> p <*> L.! manyp <|> succeed [EOL])
+
+  val tokenize = L.produce (whitespace >> manyEOL (token <~> whitespace)) o explode
     : string -> token list Error.error
 
 
