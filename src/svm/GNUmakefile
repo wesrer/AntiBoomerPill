@@ -14,6 +14,9 @@ UNITS += loader iparsers tokens name itable instructions svmdebug disasm
 MAINS += svm svm-loader-instructions
 
 
+MAINS += svm-dis
+
+
 OBJ := $(UNITS:%=$(BUILD)/%.o)
 MOBJ := $(MAINS:%=$(BUILD)/%.o)
 
@@ -49,6 +52,10 @@ $(BIN)/svm: $(OBJ) $(BUILD)/svm.o
 
 $(BIN)/svm-loader-instructions: $(OBJ) $(BUILD)/svm-loader-instructions.o
 	gcc $(CFLAGS) -o $@ $^ -lm
+
+$(BIN)/svm-dis: $(OBJ) $(BUILD)/svm-dis.o
+	gcc $(CFLAGS) -o $@ $^ -lm
+
 
 
 

@@ -76,10 +76,11 @@ struct
   val eol       = P.maybe (fn (L.EOL)        => SOME () | _ => NONE) one
 
   (* turn any single-token string into a parser for that token *)
-  fun the s =
-    case AsmLex.tokenize s
-      of Error.OK [t, AsmLex.EOL] => sat (P.eq t) one >> succeed ()
-       | _ => Impossible.impossible "non-token in assembler parser"
+  fun the "\n" = eol
+    | the s =
+        case AsmLex.tokenize s
+          of Error.OK [t, AsmLex.EOL] => sat (P.eq t) one >> succeed ()
+           | _ => Impossible.impossible "non-token in assembler parser"
 
   fun kw s = sat (P.eq s) name  (* keyword; example: kw "goto" *)
 

@@ -40,3 +40,8 @@ Value literal_value(VMState state, unsigned index) {
   (void) state; (void) index; // replace with real code
   assert(0);
 }
+
+int literal_count(VMState state) {
+  (void) state; // replace with real code
+  assert(0);
+}

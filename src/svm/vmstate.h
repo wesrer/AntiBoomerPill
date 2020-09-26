@@ -27,4 +27,8 @@ Value literal_value(VMState state, unsigned index);
   // for use in `vmrun`, in which you don't want to pay the 
   // overhead of a function call.
 
+int literal_count(VMState state);
+  // Returns N, the number of index values for which it
+  // is ok to call `literal_value` (range 0 to N-1)
+
 #endif /* VMSTATE_INCLUDED */
