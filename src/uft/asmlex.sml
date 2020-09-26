@@ -37,7 +37,6 @@ struct
 
   val dq = #"\""   (* double quote *)
 
-  fun quoteString s = str dq ^ String.toCString s ^ str dq
   fun ceeMinus #"~" = #"-"
     | ceeMinus c    = c
 
@@ -59,13 +58,13 @@ struct
     | unparse (EQUALEQUAL)  = "=="
     | unparse (REGISTER n)  = "$r" ^ Int.toString n
     | unparse (NAME s)      = s  (* dodgy? *)
-    | unparse (STRING s)    = quoteString s
+    | unparse (STRING s)    = StringEscapes.quote s
     | unparse (INT s)       = String.map ceeMinus (Int.toString s)
     | unparse (EOL)         = "<eol>"
 
   structure L = MkListProducer (val species = "lexer"
                                 type input = char
-                                val show = quoteString o implode
+                                val show = StringEscapes.quote o implode
                                )
 
 
