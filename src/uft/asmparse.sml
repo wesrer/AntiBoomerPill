@@ -61,6 +61,10 @@ struct
   fun debug msg =
       P.ofFunction (fn ts => (app eprint ["@> ", msg, "\n"]; SOME (Error.OK (), ts)))
 
+  (* make another parser chatter on entry *)
+  val verbose : string -> 'a parser -> 'a parser
+   = (fn msg => fn p => debug msg >> p)
+
 
   (****************************************************************************)
 
@@ -126,7 +130,7 @@ struct
    (* simple parser with no error detection *)
    val instruction : A.instr Error.error parser
      = Error.OK <$>
-       P.fix (fn instruction =>
+       P.fix (fn instruction : A.instr parser =>
                 one_line_instr <~> eol
             <|> loadfunc <$> loadfunStart <*> many instruction <~> loadfunEnd
              )
