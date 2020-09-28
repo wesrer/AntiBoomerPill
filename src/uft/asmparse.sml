@@ -5,9 +5,10 @@
 
 structure AsmParse :>
   sig
+    type line = string (* one line of assembly code *)
     val parse  : AsmLex.token list list -> AssemblyCode.instr list Error.error
-    val unparse1 : AssemblyCode.instr -> string 
-    val unparse : AssemblyCode.instr list -> string list (* use me if there are functions *)
+    val unparse1 : AssemblyCode.instr -> line
+    val unparse : AssemblyCode.instr list -> line list (* use me if there are functions *)
   end
   =
 struct
@@ -23,6 +24,8 @@ struct
   structure L = AsmLex
   structure A = AssemblyCode
   structure O = ObjectCode
+
+  type line = string (* one line of assembly code *)
 
   (* Operations on producers: Wishing for Modula-style FROM IMPORT here ... *)
   infix 3 <*>      val op <*> = P.<*>
