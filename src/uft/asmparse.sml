@@ -6,9 +6,8 @@
 structure AsmParse :>
   sig
     type line = string (* one line of assembly code *)
-    val parse  : AsmLex.token list list -> AssemblyCode.instr list Error.error
-    val unparse1 : AssemblyCode.instr -> line
-    val unparse : AssemblyCode.instr list -> line list (* use me if there are functions *)
+    val parse   : AsmLex.token list  list -> AssemblyCode.instr list Error.error
+    val unparse : AssemblyCode.instr list -> line list
   end
   =
 struct
@@ -46,6 +45,7 @@ struct
   val one = P.one
   val notFollowedBy = P.notFollowedBy
   val eos = P.eos
+  fun flip f x y = f y x
 
   (* utilities *)
 
