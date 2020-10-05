@@ -38,7 +38,6 @@ structure Primitive :> sig
   val expect : primitive
   val check_assert : primitive
   val loadliteral : primitive
-
 end
   =
 struct
