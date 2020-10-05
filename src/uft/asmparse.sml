@@ -68,6 +68,20 @@ struct
   val verbose : string -> 'a parser -> 'a parser
    = (fn msg => fn p => debug msg >> p)
 
+  val veryVerbose : string -> 'a parser -> 'a parser
+      = (fn what => fn p =>
+           let fun shout s = app eprint ["looking for ", what, s, "\n"]
+           in  P.ofFunction (fn ts =>
+                                let val _ = shout "..."
+                                    val answer = P.asFunction p ts
+                                    val _ =
+                                        case answer
+                                          of NONE => shout ": failed"
+                                           | SOME (Error.ERROR _, _) => shout ": errored"
+                                           | SOME (Error.OK _, _) => shout ": succeeded"
+                                in  answer
+                                end)
+           end)
 
   (****************************************************************************)
 
