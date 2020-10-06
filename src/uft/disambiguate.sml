@@ -15,7 +15,7 @@ end
 struct
   structure P = Primitive
   structure S = VScheme
-  structure X = UnambiguousVScheme
+  structure X = UnambiguousVScheme   (* "X" for "Extended Scheme" *)
 
   (**************** possible referents for a name ****************)
 
@@ -34,30 +34,10 @@ struct
 
   (***************** machinery for disambiguating primtive functions *************)
 
-  fun printLike p = P.name p = "print" orelse P.name p = "printu"
-     (* these have special semantics: VM semantics differs from vScheme semantics *)
-
-  fun callPrimitive p es =  (* type below *)
-    if not (printLike p) then
-        X.PRIMCALL (p, es)
-    else
-        (* The VM instructions runs only for side effect, but
-           vScheme semantics say the primitive must return its
-           argument.  So translate it into
-               (let ([x e]) (begin (<primitive> x) x))   *)
-       (case es
-          of [e] => X.LETX (X.LET,  [("x", e)],
-                            X.BEGIN [ X.PRIMCALL (p, [X.LOCAL "x"])
-                                    , X.LOCAL "x"
-                                    ])
-           | _   => X.PRIMCALL (p, es)  (* will result in an error later *)
-       ) 
-  val _ = callPrimitive : P.primitive -> X.exp list -> X.exp
-
-  fun etaExpand p =
+  fun etaExpand p = (* used when a primitive occurs in a value position *)
     let val args = ["x", "y", "z", "w"]
         val formals = List.take (args, P.arity p)
-    in  X.LAMBDA (formals, callPrimitive p (map X.LOCAL formals))
+    in  X.LAMBDA (formals, X.PRIMCALL (p, map X.LOCAL formals))
     end
   val _ = etaExpand : P.primitive -> X.exp
 

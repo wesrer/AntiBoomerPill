@@ -31,8 +31,8 @@ struct
     = fn X.LOCAL x => succeed x 
        | e => error ("expected a local variable but instead got " ^ (X.whatIs e))
 
-  fun value _ = Impossible.unimp "project VScheme value into KNF"
-  fun def   _ = Impossible.unimp "project VScheme definition into KNF"
+  fun value _ = Impossible.exercise "project VScheme value into KNF"
+  fun def   _ = Impossible.exercise "project VScheme definition into KNF"
 
 end
 

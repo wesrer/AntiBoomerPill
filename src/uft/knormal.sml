@@ -32,7 +32,7 @@ struct
   structure K = KNormalForm
   type name = string
 
-  fun setglobal (x, register) = Impossible.unimp "setglobal"
-  fun getglobal x             = Impossible.unimp "getglobal"
+  fun setglobal (x, register) = Impossible.exercise "setglobal"
+  fun getglobal x             = Impossible.exercise "getglobal"
 
 end
