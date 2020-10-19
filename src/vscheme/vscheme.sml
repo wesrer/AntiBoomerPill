@@ -1858,10 +1858,14 @@ fun check (v, v') =
 fun expect (v, v') =
   case !pendingCheck
    of NONE => raise RuntimeError "expect with no check"
-    | SOME (check, s) => addUnitTest (CHECK_EXPECT' (check, s, v, valueString v'))
+    | SOME (check, s) => ( addUnitTest (CHECK_EXPECT' (check, s, v, valueString v'))
+                         ; pendingCheck := NONE
+                         )
 
 val check  = fn x => (check  x; LUANIL)
 val expect = fn x => (expect x; LUANIL)
+
+exception Halt
 
 fun readEvalPrintWith errmsg (xdefs, basis, interactivity) =
   let val unitTests = ref []
@@ -1886,7 +1890,7 @@ fun readEvalPrintWith errmsg (xdefs, basis, interactivity) =
                                                                         (*OMIT*)
             fun caught msg = (errmsg (stripAtLoc msg); basis)
             val _ = resetOverflowCheck ()     (* OMIT *)
-        in  withHandlers try xd caught
+        in  withHandlers try xd caught handle Halt => basis
         end 
       (* type declarations for consistency checking *)
       val _ = op errmsg     : string -> unit
@@ -1928,6 +1932,7 @@ fun arityError n args =
                       " but got " ^ intString (length args) ^ " arguments")
 fun unaryOp  f = (fn [a]    => f a      | args => arityError 1 args)
 fun binaryOp f = (fn [a, b] => f (a, b) | args => arityError 2 args)
+fun nullaryOp f = (fn []    => f () | args => arityError 0 args)
 (* type declarations for consistency checking *)
 val _ = op unaryOp  : (value         -> value) -> (value list -> value)
 val _ = op binaryOp : (value * value -> value) -> (value list -> value)
@@ -2013,6 +2018,7 @@ val primitiveBasis =
                                 "cdr applied to non-list " ^ valueString v))) ::
                         ("expect",  binaryOp expect) ::
                         ("check",   binaryOp check) ::
+                        ("halt",   nullaryOp (fn () => raise Halt)) ::
                         (* primitives for \uscheme\ [[::]] S209c *)
                         ("println", unaryOp (fn v => (print (valueString v ^
                                                                   "\n"); v))) ::
