@@ -1642,6 +1642,8 @@ fun eval (e, rho) =
         | ev (e as APPLY (f, args)) = 
                (case ev f
                   of PRIMITIVE prim => prim (e, map ev args)
+                   | closure as PAIR (f as CLOSURE _, _) =>
+                       ev (APPLY (LITERAL f, LITERAL closure :: args))
                    | CLOSURE clo    =>
                        (* apply closure [[clo]] to [[args]] ((mlscheme)) 309a *)
                                        let val ((formals, body), savedrho) = clo
