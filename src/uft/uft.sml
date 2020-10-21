@@ -37,10 +37,10 @@ struct
   (**** Reader functions ****)
 
   val schemeOfFile : instream -> VScheme.def list error =
-    lines                             (* line list *)
-    >>>  SxParse.parse                (* sx list error *)
-    >=>  liftMap VSchemeParsers.defs  (* def list list error *)
-    >>>  Error.map List.concat        (* def list error *)
+    lines                                   (* line list *)
+    >>>  SxParse.parse                      (* sx list error *)
+    >=>  Error.mapList VSchemeParsers.defs  (* def list list error *)
+    >>>  Error.map List.concat              (* def list error *)
     
   val schemexOfFile : instream -> UnambiguousVScheme.def list error =
     schemeOfFile >>>
