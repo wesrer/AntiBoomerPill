@@ -10,6 +10,8 @@
 #include <stdint.h>
 
 #include "value.h"
+#include "vmstack.h"
+
 
 typedef struct VMState *VMState;
 
