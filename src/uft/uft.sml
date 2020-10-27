@@ -90,7 +90,7 @@ struct
   fun emitVO outfile = app (outln outfile) o ObjectUnparser.module
   fun emitVS outfile = app (outln outfile) o AsmParse.unparse
 
-  fun emitScheme outfile = Wpp.toOutStream width outfile o WppScheme.pp
+  fun emitScheme outfile = Wppx.toOutStream width outfile o WppScheme.pp
 
   fun emitHO outfile = app (emitScheme outfile o Disambiguate.ambiguate)
 
