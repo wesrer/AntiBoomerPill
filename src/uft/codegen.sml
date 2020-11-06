@@ -32,7 +32,8 @@ struct
   val _ = S     : 'a      -> 'a hughes_list   (* singleton *)
   val _ = L     : 'a list -> 'a hughes_list   (* conversion *)
 
-  fun hconcat xs = foldr op o empty xs
+  val hconcat : 'a hughes_list list -> 'a hughes_list
+    = fn xs => foldr op o empty xs
 
   (************** the code generator ******************)
 
