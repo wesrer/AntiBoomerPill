@@ -12,7 +12,7 @@ signature SET = sig
   val elems : 'a set -> 'a list
   val ofList : ''a list -> ''a set
 
-  val union' : ''a set list -> ''a set
+  val union' : ''a set list -> ''a set  (* union of a list of sets *)
 end
 
 
