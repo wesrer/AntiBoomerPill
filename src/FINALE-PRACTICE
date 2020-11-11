@@ -1,0 +1,78 @@
+COMP 150VM: Practice for the Course Finale
+
+What group is reporting this finale practice?
+
+  - Sayak, Emily and Aditi
+
+What feature did you choose?
+
+  - Pattern matching in Erlang
+
+  We chose pattern matching in erlang because all of our favorite functional languages (SML) have pattern matching. 
+  We were very curious about what phases in the svm/uft might have to change.
+
+What is your implementation plan?  Include answers to any questions
+you addressed during lab.
+
+  Can the new feature be handled purely in the UFT, or would an implementation benefit from SVM changes? If the latter, what would you want to change in the SVM and why?
+
+    Yes, the new feature can be handled purely in the UFT. Since we plan to translate pattern matching expressions into a sequence of if and let statements,
+    we can do so within the UFT by performing a translation pass that replaces case statements. The resulting code can be expressed using unambiguous vscheme.
+
+  To implement the new feature, would you want to define a new intermediate language? Or could it be handled within the scope of the existing intermediate languages?
+
+  We are introducing modifications to our source language, so that it becomes vscheme with pattern matching. Then, we will introduce a new intermediary translation step
+  that will translate from our new source language to vscheme as previously defined. 
+
+  To implement the feature, which intermediate languages might you want to change? How?
+
+    We are going to change vscheme to be vscheme with patterns, so we will include expressions with case statements.
+
+  Is the feature going to require a new translation? Or can it be implemented as part of an existing translation? If there’s an existing translation, which one is best qualified to implement the new feature?
+
+    We do require a new translation in order to go from vscheme with patterns to vscheme.
+
+  How will the new feature affect the structure of the UFT and the UFT driver?
+
+    We would have to modify the uft driver. We have to add a reader function (for patterned vscheme), and a materializer to add a translation step.
+
+  How much effort will be involved? Is this something you can knock off in an afternoon? Is it more comparable to a week-long module? Or it is even bigger than that?
+
+    We think it would take an afternoon or two.
+
+  Roughly how will the implementation work?
+
+    To add patterns to vscheme (aka create "patterned vscheme") we need to follow the following grammar:
+          pattern match ::= (case exp_0 [(pattern1 exp1) (pattern2 exp2) ... (default exp_n)])
+          pattern       ::= value | exp
+
+    We need to add a translation step to translate from patterned vscheme to ambiguous vscheme. 
+      Translation would entail transforming instances of the 'pattern match' grammar rule into a let expression:
+        - The patterns get evaluated (in the case where the name is a functor) and bound to fresh local names in the let expression
+        - The expressions associated with the patterns get translated into branches of an if statement, with the conditional checking the equality between the 
+          'exp_0' in the grammar rule and the value bound to the corresponding evaluated pattern
+        - The default case turns into the last else branch which executes if none of the equalities passed
+        - Eg. `(case x [(5 7) ((+ 2 4) 8) (default 9)])` gets translated into:
+          `(let ([m 5] [n (+ 2 4)])
+                (if (= x m)
+                    7
+                    (if (= x n)
+                    8
+                    9)))`
+
+    (case x [((if #t 7 8) 7) ((+ 2 4) 8) (default 9)])
+
+  If the new feature is misused, is there a risk that the UFT might crash? The loader might fail? The SVM might crash? If so, how should the risks be mitigated?
+    No, since we are only translating from a superset of vscheme to vscheme our current error infrastructure handles all possible cases. The only errors that could
+    happen in the translation step we are defining are syntactic and semantic ones.
+
+  If you can identify particular aspects of the implementation, either in the UFT or the SVM, what functions do you think you’ll define? What will their types be? What algorithms and data structures do you expect to rely on?
+
+    We will need a function called translate in a new file called translatepatternedscheme in order to translate case expressions in 
+    patterned vscheme to a sequence of let and if statements.
+    The type of the function would be:
+    patterned_vscheme instruction list -> vscheme instruction list
+
+    We also have to define a datatype structure for patterned vscheme, which is essentially the same as vscheme with an added 
+    exp type constructor for case expressions.
+

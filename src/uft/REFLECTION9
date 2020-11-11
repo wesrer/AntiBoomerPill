@@ -1,0 +1,74 @@
+2. To claim this point, identify a line of your code that contains a 
+continuation passed to bindAnyReg, bindSmallest, or a similar function, 
+and explain how the continuation reserves the allocated register to prevent its reuse.
+
+On line 82, we pass a continuation (fn r => nbRegs bindSmallest (A -- r) formals  (fn ys => K.FUNCALL (r, ys))) to
+bindSmallest that actually uses a register from the register set by using the infix -- operator, so it cannot be reused.
+
+3. To claim this point, identify a line of your code that contains a continuation passed to bindAnyReg, bindSmallest, or a 
+similar function, and explain how the continuation 
+does not reserve the allocated register but rather allows its immediate reuse.
+
+On line 86, we pass the continuation (fn (x) => K.VMOP_LIT (P.setglobal, [x], K.STRING name)) into bindAnyReg,
+which allows for its immediate reuse because we don't change the register set.
+    
+4. To claim this point, identify (by line number) every case in your K‑normalizer that binds a list of 
+expressions to a list of registers, and confirm that each case uses the same higher-order function.
+
+    primcall, line 80
+    funcall, line 81
+    let, line 90
+
+    All of them use nbRegs!
+
+5. To claim this point, identify the lines of your code where it is determined that a function’s 
+incoming actual parameters are in consecutive registers starting at register 1.
+
+    define case on line 126 gets the consecutive registers for each formal parameter.
+
+
+7. To earn this point, your system must run and pass all the tests in scheme105.scm. 
+To claim the point, let us know that you accomplished this goal, and in the reflection, 
+tell us how many tests are included in the file. If anything went wrong in your first run of step 21, l
+et us know one thing that went wrong and how you fixed it.
+
+    There are 30 tests, and we were unable to get the whole thing to run and pass. 
+    One thing that went wrong was we didn't have car, cdr, null? and other primitives defined, so
+    we added those in vmrun. We also had an issue with tailcall that we fixed. but to no avail!
+    We get an error InternalError: primitive error used for value and we don't know why :(
+
+8. To claim this point, justify your choice of policy for K‑normalizing a let expression in step 19.
+ Justification should include an explanation of why another policy is inferior and should be
+  demonstrated with a code example.
+Keep in mind that vScheme local variables are mutable; that’s what makes this issue difficult.
+
+ If we used bindSmallest, 
+  names that are already in registers would 
+  be rebound anyway. Which would probably be what the user 
+  wanted. Consider this case:
+
+  In the case:
+
+  (define foo (x y)
+    (let ([x y] [y x]) 
+        (- x y))
+  )
+
+  ;; BINDANY
+
+    (define foo (x y) (- x y))
+
+  ;; BINDSMALLEST
+
+    (define foo (x y) 
+        (let ([x y] [y x])
+            (- x y) 
+        )))
+
+      We used bindAnyReg. So, our developer might
+      be angry with us because our expected behavior seems like a bug. Perhaps
+      we will change this next week because it seems like bindSmallest would be a better
+      policy to use.
+
+
+
