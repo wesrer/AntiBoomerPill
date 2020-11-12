@@ -97,9 +97,9 @@ struct
                                                               exp rho' (removeRegisters A rs) e1
                                                             end)
                               end    
-        (* | F.CLOSURE (lambda, captured) => Impossible.exercise "CLOSURE"
+        | F.CLOSURE (lambda, captured) => Impossible.exercise "CLOSURE"
         | F.LETREC (bindings, body) => Impossible.exercise "LETREC"
-        | F.CAPTURED i => Impossible.exercise "CAPTURED" *)
+        | F.CAPTURED i => Impossible.exercise "CAPTURED"
     end
 
   fun helper e p v reg_set env = bindAnyReg reg_set (exp env reg_set e) (fn (x) => K.VMOP_LIT (p, [x], v))

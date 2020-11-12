@@ -18,12 +18,6 @@ structure FirstOrderScheme = struct
     | FUNCALL   of exp * exp list
     | PRIMCALL  of Primitive.primitive * exp list
     | LET       of (name * exp) list * exp
-    (* | CLOSURE   of (lambda * captured)
-    | LETREC of (bindings * body) 
-    | CAPTURED of int
-    withtype lambda = (name list * exp) *)
-
-  
 
   datatype def  = VAL    of name * exp
                 | DEFINE of name * (name list * exp)

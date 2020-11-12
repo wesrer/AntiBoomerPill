@@ -12,7 +12,6 @@ structure VScheme = struct
                | BEGIN   of exp list
                | APPLY   of exp * exp list
                | LETX    of let_kind * (name * exp) list * exp
-               (* | CASE    of exp * (exp * exp) list *)
                | LAMBDA  of lambda
   and let_kind = LET | LETREC
   and    value = SYM       of name

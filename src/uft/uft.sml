@@ -97,7 +97,7 @@ struct
     = liftMap (KNRename.mapx KNRename.regOfName) 
 
   fun KN_reg_of KN = KN_of_file >=> KN_reg_of_KN_string
-    | KN_reg_of inLang = FO_of inLang >>> ! (List.map KNormalize.def)
+    | KN_reg_of inLang = CL_of inLang >>> ! (List.map KNormalize.def)
 
   fun VS_of VS   = VS_of_file
     | VS_of inLang = KN_reg_of inLang >>> ! (map Codegen.forEffect >>> List.concat) 
@@ -142,7 +142,7 @@ struct
         | KN => KN_text_of inLang >>> ! (emitKN outfile)
         | FO => FO_of      inLang >>> ! (emitFO outfile)
         | CL => CL_of      inLang >>> ! (emitCL outfile)
-        | _  => raise NoTranslationTo outLang
+        | HOX => HOX_of    inLang >>> ! (emitHO outfile)
     ) infile
     handle Backward => raise NotForward (inLang, outLang)
          | NoTranslationTo outLang => raise NotForward (inLang, outLang)
