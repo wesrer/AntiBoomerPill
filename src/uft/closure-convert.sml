@@ -44,21 +44,36 @@ struct
 
   fun free (X.LOCAL n) = S.insert (n, S.empty)
     | free (X.LITERAL v) = S.empty
-    (* | free (X.GLOBAL n) = S.empty *)
-    | free (X.SETGLOBAL (n, e)) = S.insert (n, free e)
+    | free (X.GLOBAL n) = S.empty
+    | free (X.SETGLOBAL (n, e)) = free e
     | free (X.SETLOCAL (n, e)) = S.insert (n, free e)
     | free (X.IFX (e, e1, e2)) = S.union' [free e, free e1, free e2]
     | free (X.WHILEX (e1, e2)) = S.union' [free e1, free e1]
     | free (X.BEGIN es) =  S.union' (map free es)
-    | free (X.FUNCALL (e, es)) = S.union' (free e :: map free es)
+    | free (X.FUNCALL (e, es)) = S.union' (map free (e::es))
     | free (X.PRIMCALL (p, es)) = S.union' (map free es)
-    (* | free (X.LETX ()) *)
-    (* | free (X.LAMBDA) *)
-    | free _ = Impossible.exercise "free"
+    | free (X.LETX (X.LETREC, bindings, e)) = 
+      (* let val (names, exps) = ListPair.unzip bindings
+          val free_exps = S.union' (map free exps)
+          val name_diff = S.diff (free_exps, S.ofList names)
+          val free_body = S.diff (free e, S.ofList names)
+      in 
+        S.union' ([name_diff, free_body])
+      end *)
+      
+    | free (X.LETX (X.LET, bindings, e)) = 
+      let val (names, exps) = ListPair.unzip bindings
+          val free_exps = map free exps 
+          val free_body = S.diff (free e, S.ofList names)
+      in 
+        S.union' (free_body :: free_exps)
+      end
+    | free (X.LAMBDA (names, exp)) = free exp
 
   val _ = free : X.exp -> X.name S.set
 
   fun close def = Impossible.exercise "close a definition"
 
+  (* f(e1...en) - (x1...xn) *)
 
 end
