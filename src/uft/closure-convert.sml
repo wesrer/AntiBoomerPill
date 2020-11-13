@@ -16,7 +16,12 @@ struct
     | literal (X.NUM i)   = C.INT i
     | literal (X.BOOLV b) = C.BOOL b
     | literal X.EMPTYLIST = C.EMPTYLIST
+(* (define o (f g) (list3 (lambda ($closure x) ((CAPTURED-IN 0 $closure) ((CAPTURED-IN 1 $closure) x)))
+                        f
+                        g))
 
+  (define o (f g) (lambda (x) (f (g x))))
+*)
 
   fun indexOf x xs = 
     (* returns `SOME i`, where i is the position of `x` in `xs`,
@@ -63,11 +68,11 @@ struct
       end
     | free (X.LETX (X.LETREC, bindings, e)) = 
       let val (names, exps) = ListPair.unzip bindings
-          val free_exps = S.union' (map free exps)
-          val name_diff = S.diff (free_exps, S.ofList names)
+          val free_exps = map free exps
+          val name_diff = S.diff (S.union' free_exps, S.ofList names)
           val free_body = S.diff (free e, S.ofList names)
       in 
-        S.union' ([name_diff, free_body])
+        S.union' [free_body, name_diff]
       end
     | free (X.LAMBDA (names, exp)) = free exp
 
