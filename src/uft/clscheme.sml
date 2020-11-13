@@ -57,9 +57,10 @@ struct
              (* funcode, captured variables *)
     | exp (C.CLOSURE ((formals, body), captured)) =
         let val namelist = "$closure" :: formals
-            val explist = S.BEGIN ((exp body) :: (map exp captured))
+            val lam = S.LAMBDA (namelist,  exp body)
         in
-          S.LAMBDA (namelist,  explist)
+(**)
+            SU.cons lam (SU.list (map exp captured))
         end
     | exp (C.LETREC  (bs, e))  =
         (* I've done this one *)
