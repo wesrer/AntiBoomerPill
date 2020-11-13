@@ -38,7 +38,9 @@ struct
         val _ = closure : X.lambda -> C.closure
 
         (* I recommend internal function exp : X.exp -> C.exp *)
-        fun exp _ = Impossible.exercise "close exp over `captured`"
+        fun exp (X.LITERAL v) = C.LITERAL (literal v)
+          | exp (X.LOCAL n) = C.LOCAL n
+          | exp _ = Impossible.exercise "close exp over `captured`"
     in  exp e
     end
 
@@ -52,6 +54,13 @@ struct
     | free (X.BEGIN es) =  S.union' (map free es)
     | free (X.FUNCALL (e, es)) = S.union' (map free (e::es))
     | free (X.PRIMCALL (p, es)) = S.union' (map free es)
+    | free (X.LETX (X.LET, bindings, e)) = 
+      let val (names, exps) = ListPair.unzip bindings
+          val free_exps = map free exps 
+          val free_body = S.diff (free e, S.ofList names)
+      in 
+        S.union' (free_body :: free_exps)
+      end
     | free (X.LETX (X.LETREC, bindings, e)) = 
       let val (names, exps) = ListPair.unzip bindings
           val free_exps = S.union' (map free exps)
@@ -60,19 +69,10 @@ struct
       in 
         S.union' ([name_diff, free_body])
       end
-    | free (X.LETX (X.LET, bindings, e)) = 
-      let val (names, exps) = ListPair.unzip bindings
-          val free_exps = map free exps 
-          val free_body = S.diff (free e, S.ofList names)
-      in 
-        S.union' (free_body :: free_exps)
-      end
     | free (X.LAMBDA (names, exp)) = free exp
 
   val _ = free : X.exp -> X.name S.set
 
   fun close def = Impossible.exercise "close a definition"
-
-  (* f(e1...en) - (x1...xn) *)
 
 end
