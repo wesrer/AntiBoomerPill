@@ -53,14 +53,13 @@ struct
     | free (X.FUNCALL (e, es)) = S.union' (map free (e::es))
     | free (X.PRIMCALL (p, es)) = S.union' (map free es)
     | free (X.LETX (X.LETREC, bindings, e)) = 
-      (* let val (names, exps) = ListPair.unzip bindings
+      let val (names, exps) = ListPair.unzip bindings
           val free_exps = S.union' (map free exps)
           val name_diff = S.diff (free_exps, S.ofList names)
           val free_body = S.diff (free e, S.ofList names)
       in 
         S.union' ([name_diff, free_body])
-      end *)
-      
+      end
     | free (X.LETX (X.LET, bindings, e)) = 
       let val (names, exps) = ListPair.unzip bindings
           val free_exps = map free exps 
