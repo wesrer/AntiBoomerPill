@@ -40,6 +40,13 @@ struct
         (* I recommend internal function exp : X.exp -> C.exp *)
         fun exp (X.LITERAL v) = C.LITERAL (literal v)
           | exp (X.LOCAL n) = C.LOCAL n
+          | exp (X.GLOBAL n) = C.GLOBAL n
+          | exp (X.IFX (e1, e2, e3)) = C.IFX (exp e1, exp e2, exp e3)
+          | exp (X.WHILEX (e1, e2)) = C.WHILEX (exp e1, exp e2)
+          | exp (X.BEGIN es) = C.BEGIN (map exp es)
+          | exp (X.SETLOCAL (n, e)) = C.SETLOCAL (n, exp e)
+          | exp (X.SETGLOBAL (n, e)) = C.SETGLOBAL (n, exp e)
+          | exp (X.FUNCALL (e, es)) = C.FUNCALL 
           | exp _ = Impossible.exercise "close exp over `captured`"
     in  exp e
     end
