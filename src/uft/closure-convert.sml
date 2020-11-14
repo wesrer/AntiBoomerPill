@@ -73,7 +73,6 @@ struct
                     in 
                       C.LET (ListPair.zip (names, map exp exps), exp e)
                     end
-          | exp ()
           | exp _ = Impossible.exercise "close exp over `captured`"
     in  exp e
     end
