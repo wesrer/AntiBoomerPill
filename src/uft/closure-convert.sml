@@ -40,10 +40,11 @@ struct
         (* I recommend internal function closure : X.lambda -> C.closure *)
         fun closure (xs, body) = 
           let
-            val free_names = S.diff(free body, S.ofList xs)
-            val free_names_list = S.elems(free_names)
+            val free_names = S.diff (free body, S.ofList xs)
+            val free_names_list = S.elems (free_names)
             val capturedExps = closeExp free_names_list
             val free_expressions = map (capturedExps o X.LOCAL) free_names_list
+            
           in
             ((xs, closeExp free_names_list body), free_expressions)
           end
@@ -109,6 +110,10 @@ struct
 
   val _ = free : X.exp -> X.name S.set
 
-  fun close def = Impossible.exercise "close a definition"
+  fun close (X.VAL (n, e)) = C.VAL (n, closeExp [] e)
+    | close (X.EXP e) = C.EXP (closeExp [] e)
+    | close (X.DEFINE (n, (xs, e))) = C.DEFINE (n, (xs, closeExp [] e))
+    | close (X.CHECK_EXPECT (s1, e1, s2, e2)) = C.CHECK_EXPECT (s1, closeExp [] e1, s2, closeExp [] e2)
+    | close (X.CHECK_ASSERT (s, e)) = C.CHECK_ASSERT (s, closeExp [] e)
 
 end
