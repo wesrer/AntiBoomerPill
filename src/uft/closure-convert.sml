@@ -31,7 +31,7 @@ struct
     in  find 0 xs
     end
 
-  fun closeExp captured e =
+  and closeExp captured e =
     (* Given an expression `e` in Unambiguous vScheme, plus a list
        of the free variables of that expression, return the closure-
        converted version of the expression in Closed Scheme *)
@@ -39,24 +39,46 @@ struct
 
         (* I recommend internal function closure : X.lambda -> C.closure *)
         fun closure (xs, body) = 
-              raise Impossible.exercise "closure-conversion of a `lambda`"
+          let
+            val free_names = S.diff(free body, S.ofList xs)
+            val free_names_list = S.elems(free_names)
+            val capturedExps = closeExp free_names_list
+            val free_expressions = map (capturedExps o X.LOCAL) free_names_list
+          in
+            ((xs, closeExp free_names_list body), free_expressions)
+          end
+
         val _ = closure : X.lambda -> C.closure
 
         (* I recommend internal function exp : X.exp -> C.exp *)
         fun exp (X.LITERAL v) = C.LITERAL (literal v)
-          | exp (X.LOCAL n) = C.LOCAL n
+          | exp (X.LOCAL n) = 
+            (case (indexOf n captured) of   
+                NONE => C.LOCAL n
+              | SOME i => C.CAPTURED i)
           | exp (X.GLOBAL n) = C.GLOBAL n
           | exp (X.IFX (e1, e2, e3)) = C.IFX (exp e1, exp e2, exp e3)
           | exp (X.WHILEX (e1, e2)) = C.WHILEX (exp e1, exp e2)
           | exp (X.BEGIN es) = C.BEGIN (map exp es)
-          | exp (X.SETLOCAL (n, e)) = C.SETLOCAL (n, exp e)
+          | exp (X.SETLOCAL (n, e)) = 
+            (case (indexOf n captured) of   
+                NONE => C.SETLOCAL(n, exp e)
+              | SOME i => Impossible.impossible "Attemping to write a captured variable. Stop.")
           | exp (X.SETGLOBAL (n, e)) = C.SETGLOBAL (n, exp e)
-          | exp (X.FUNCALL (e, es)) = C.FUNCALL 
+          | exp (X.FUNCALL (e, es)) = C.FUNCALL (exp e, map exp es)
+          | exp (X.PRIMCALL (p, es)) = C.PRIMCALL (p, map exp es)
+          | exp (X.LAMBDA (xs, e)) = C.CLOSURE (closure (xs, e))
+          | exp (X.LETX (X.LET, bindings, e)) = 
+                    let val (names, exps) = ListPair.unzip bindings
+                    in 
+                      C.LET (ListPair.zip (names, map exp exps), exp e)
+                    end
+          | exp ()
           | exp _ = Impossible.exercise "close exp over `captured`"
     in  exp e
     end
 
-  fun free (X.LOCAL n) = S.insert (n, S.empty)
+  and free (X.LOCAL n) = S.insert (n, S.empty)
     | free (X.LITERAL v) = S.empty
     | free (X.GLOBAL n) = S.empty
     | free (X.SETGLOBAL (n, e)) = free e
