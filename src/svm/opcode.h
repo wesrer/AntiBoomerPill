@@ -16,5 +16,6 @@ typedef enum opcode {
                       Unimp, // stand-in for opcodes not yet implemented
 } Opcode;
 
+int isgetglobal(Opcode code); // update this for your SVM, in instructions.c
 
 #endif
