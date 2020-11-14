@@ -41,7 +41,7 @@ struct
         fun closure (xs, body) = 
           let
             val free_names = S.diff (free body, S.ofList xs)
-            val free_names_list = S.elems (free_names)
+            val free_names_list = S.elems (free_names) @ captured
             val capturedExps = closeExp free_names_list
             val free_expressions = map (capturedExps o X.LOCAL) free_names_list
             
