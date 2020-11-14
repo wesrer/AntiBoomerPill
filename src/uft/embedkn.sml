@@ -42,12 +42,16 @@ struct
     | exp (K.FUNCODE (xs, e)) = S.LAMBDA (xs, exp e)
     | exp (K.FUNCALL (x, xs)) = S.APPLY ((S.VAR x), map S.VAR xs)                                  
     | exp (K.IF_EXP (reg, e1, e2)) = S.IFX ((S.VAR reg), exp e1, exp e2)
+    | exp (K.CAPTURED i) = S.APPLY  (S.VAR "CAPTURED-IN", [S.LITERAL (S.NUM i), S.VAR "$closure"])
     | exp (K.WHILE (x, e1, e2)) = S.WHILEX (let' x (exp e1) (S.VAR x), exp e2)
+    | exp (K.CLOSURE ((xs, e), [])) = exp (K.FUNCODE (xs, e))
+    (* | exp (K.CLOSURE ((xs, e), captured)) = S. *)
     | exp (K.LET (x, e, K.NAME p)) = (case (x = p) of
                                       true => exp e 
                                       | false => let' x (exp e) (exp (K.NAME p)))
     | exp (K.LET (reg, e1, e2)) = let' reg (exp e1) (exp e2)
-
+    | exp (K.CLOSURE c) = raise Impossible.impossible "knormal form closure"
+    (* | exp _ = raise Impossible.impossible "knormal form catchall" *)
 
 
    fun def knf_e = S.EXP (exp knf_e)

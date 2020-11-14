@@ -73,8 +73,11 @@ struct
                     in 
                       C.LET (ListPair.zip (names, map exp exps), exp e)
                     end
-          | exp _ = Impossible.exercise "close exp over `captured`"
-    in  exp e
+          | exp (X.LETX (X.LETREC, bindings, e)) = 
+                    let val (names, exps) = ListPair.unzip bindings
+                    in 
+                      C.LET (ListPair.zip (names, map exp exps), exp e)
+                    end    in  exp e
     end
 
   and free (X.LOCAL n) = S.insert (n, S.empty)

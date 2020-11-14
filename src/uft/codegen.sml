@@ -61,7 +61,8 @@ struct
                     then S (A.call dest funreg (List.last (x::xs))) 
                     else (raise Impossible.impossible "registers in funcall not consecutive"))
                  | K.FUNCALL (funreg, []) => S (A.call dest funreg funreg)
-                 | K.FUNCODE (xs, e) => S (A.loadfunc dest (List.length xs) ((return e) [])))
+                 | K.FUNCODE (xs, e) => S (A.loadfunc dest (List.length xs) ((return e) []))
+                 | _ =>  Impossible.unimp"codegen")
 
   and forEffect' (e: reg KNormalForm.exp) : instruction hughes_list =
         (case e of K.VMOP (vmop, ns) => (case vmop of 
@@ -95,7 +96,8 @@ struct
                     if (A.areConsecutive (x::xs)) andalso (x = funreg + 1) 
                     then S (A.call x funreg (List.last (x::xs))) 
                     else raise Impossible.impossible "registers in funcall not consecutive"
-                 | K.FUNCALL (funreg, []) => S (A.call funreg funreg funreg))
+                 | K.FUNCALL (funreg, []) => S (A.call funreg funreg funreg)
+                 | _ =>  Impossible.unimp "codegen")
 
   and return (e : reg KNormalForm.exp) : instruction hughes_list =
       (case e of 

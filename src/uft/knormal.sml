@@ -22,6 +22,12 @@ structure KNormalForm = struct
     | ASSIGN of 'a * 'a exp
     | WHILE of 'a * 'a exp * 'a exp
     | FUNCODE of 'a list * 'a exp
+    | CAPTURED  of int
+    | CLOSURE  of 'a closure
+    withtype 'a closure = ('a list * 'a exp) * 'a list
+        (* (funcode, registers holding values of captured variables) *)
+    type 'a funcode = 'a list * 'a exp  (* lambda with no free names *)
+
 end
 
 structure KNormalUtil :> sig
