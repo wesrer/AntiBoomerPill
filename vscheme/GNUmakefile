@@ -1,6 +1,6 @@
 export SHELL = /bin/ksh
 
-TOP := ../..
+TOP := ..
 
 BUILD = $(TOP)/build
 BIN = $(TOP)/bin
