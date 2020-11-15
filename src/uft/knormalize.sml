@@ -67,6 +67,14 @@ struct
 
   fun bindSmallest A e k = K.LET (smallest A, e, k (smallest A))
 
+  fun funcode (formals, x) env =
+      let 
+        val (env', reg_set') = List.foldl (fn (x, (bindings, A)) => (Env.bind (x, smallest A, bindings), A -- (smallest A)) ) env formals
+        val consec_regs = List.map (fn n => Env.find (n, env')) formals
+        (* val funcode = K.FUNCODE (consec_regs, exp env' reg_set' x) *)
+      in 
+        (consec_regs, exp env' reg_set' x)
+      end
 
   and exp rho A e =
     let val exp : reg Env.env -> regset -> ClosedScheme.exp -> exp = exp
@@ -74,6 +82,9 @@ struct
       fun normalize_begin [] = (K.LITERAL (ObjectCode.BOOL false))
         | normalize_begin [e] = exp rho A e
         | normalize_begin (e::es) = K.SEQ (exp rho A e, normalize_begin es)
+      fun removeRegisters reg_set [] = reg_set
+        | removeRegisters reg_set (x::xs) = removeRegisters (reg_set -- x) xs
+      fun bind_rho rs names = ListPair.foldl (fn (n, r, env) => Env.bind (n, r, env)) rho (names, rs)
     in  
         case e of 
           F.LITERAL v => K.LITERAL v
@@ -88,18 +99,16 @@ struct
         | F.IFX (e1, e2, e3) => bindAnyReg A (exp rho A e1) (fn (x) => K.IF_EXP (x, (exp rho A e2), (exp rho A e3)))
         | F.WHILEX (e1, e2) =>  K.WHILE (smallest A, (exp rho A e1), (exp rho A e2))
         | F.LET (es, e1) => let val (names, exps) = ListPair.unzip es
-                                fun removeRegisters reg_set [] = reg_set
-                                  | removeRegisters reg_set (x::xs) = removeRegisters (reg_set -- x) xs
-                                fun bind_rho rs = ListPair.foldl (fn (n, r, env) => Env.bind (n, r, env)) rho (names, rs)
                               in
-                                 nbRegs bindAnyReg A exps (fn rs => let val rho' = bind_rho rs 
+                                 nbRegs bindAnyReg A exps (fn rs => let val rho' = bind_rho rs names
                                                             in
                                                               exp rho' (removeRegisters A rs) e1
                                                             end)
                               end    
-        | F.CLOSURE (lambda, captured) => Impossible.exercise "CLOSURE"
+        | F.CLOSURE ((formals, e), []) => K.CLOSURE (funcode (formals, e) (rho, RS 0), [])
+        | F.CLOSURE ((formals, e), captured) => nbRegs bindAnyReg A captured (fn rs =>  K.CLOSURE (funcode (formals, e) (rho, RS 0), rs))
         | F.LETREC (bindings, body) => Impossible.exercise "LETREC"
-        | F.CAPTURED i => Impossible.exercise "CAPTURED"
+        | F.CAPTURED i => K.CAPTURED i
     end
 
   fun helper e p v reg_set env = bindAnyReg reg_set (exp env reg_set e) (fn (x) => K.VMOP_LIT (p, [x], v))
@@ -123,15 +132,10 @@ struct
         | F.CHECK_EXPECT (s1, e1, s2, e2) => K.SEQ ((helper e1 P.check (ObjectCode.STRING s1) reg_set env), (helper e2 P.expect (ObjectCode.STRING s2) reg_set env))
         | F.CHECK_ASSERT (s, x) => (helper x P.check_assert (ObjectCode.STRING s) reg_set env)
         | F.VAL (name, x) => exp env reg_set (F.SETGLOBAL (name, x))
-        | F.DEFINE (fun_name, (formals, x)) =>
-          let 
-            val (env', reg_set') = List.foldl (fn (x, (bindings, A)) => (Env.bind (x, smallest A, bindings), A -- (smallest A)) ) (Env.bind (fun_name, 0, env), RS 1) formals
-            val consec_regs = List.map (fn n => Env.find (n, env')) formals
-            val funcode = K.FUNCODE (consec_regs, exp env' reg_set' x)
-            val let_exp = K.LET (0, funcode, KNormalUtil.setglobal (fun_name, 0))
-          in 
-            let_exp
-          end
+        | F.DEFINE (fun_name, (formals, x)) =>  let val fun_env = (Env.bind (fun_name, 0, env), RS 1)
+                                                  in
+                                                    K.LET (0, K.FUNCODE (funcode (formals, x) fun_env), KNormalUtil.setglobal (fun_name, 0))
+                                                  end
       end 
 
 end

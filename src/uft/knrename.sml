@@ -37,6 +37,7 @@ struct
     | exp (f, K.ASSIGN (x, e)) = curry K.ASSIGN <$> f x <*> exp (f, e)
     | exp (f, K.WHILE (x, e1, e2)) = curry3 K.WHILE <$> f x <*> exp (f, e1) <*> exp (f, e2)
     | exp (f, K.FUNCODE (xs, e)) = curry K.FUNCODE <$> errorList (map f xs) <*> exp (f, e)
+    | exp (f, K.CAPTURED i) = K.CAPTURED <$> succeed i
     | exp _ = Impossible.unimp "knrename"
 
   fun mapx f = (fn (x) => exp (f, x))

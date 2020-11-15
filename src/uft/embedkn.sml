@@ -31,27 +31,31 @@ struct
   fun exp (K.LITERAL v) = S.LITERAL (value v)
     | exp (K.NAME x) = S.VAR x
     | exp (K.VMOP (vmop, xs)) = S.APPLY (S.VAR (P.name vmop), map S.VAR xs)
-    | exp (K.VMOP_LIT (vmop, [], v)) =  (case (P.name vmop) of 
-                                          "getglobal" => S.VAR (nameFrom v)
-                                          | _ => S.APPLY (S.VAR (P.name vmop), [S.LITERAL (value v)]))                                
-    | exp (K.VMOP_LIT (vmop, r::rs, v)) =  (case (P.name vmop) of 
-                                                    "setglobal" => S.SET (nameFrom v, S.VAR r)
-                                                    | name => S.APPLY (S.VAR name, (map S.VAR (r::rs))@ [S.LITERAL (value v)]))
+    | exp (K.VMOP_LIT (vmop, [], v)) =  
+          (case (P.name vmop) of 
+            "getglobal" => S.VAR (nameFrom v)
+            | _ => S.APPLY (S.VAR (P.name vmop), [S.LITERAL (value v)]))                                
+    | exp (K.VMOP_LIT (vmop, r::rs, v)) = 
+        (case (P.name vmop) of 
+            "setglobal" => S.SET (nameFrom v, S.VAR r)
+            | name => S.APPLY (S.VAR name, (map S.VAR (r::rs))@ [S.LITERAL (value v)]))
     | exp (K.SEQ (e1, e2)) =  S.BEGIN (exp e1 :: [exp e2])  
     | exp (K.ASSIGN (x, e)) = S.SET (x, exp e)
     | exp (K.FUNCODE (xs, e)) = S.LAMBDA (xs, exp e)
     | exp (K.FUNCALL (x, xs)) = S.APPLY ((S.VAR x), map S.VAR xs)                                  
     | exp (K.IF_EXP (reg, e1, e2)) = S.IFX ((S.VAR reg), exp e1, exp e2)
     | exp (K.CAPTURED i) = S.APPLY  (S.VAR "CAPTURED-IN", [S.LITERAL (S.NUM i), S.VAR "$closure"])
+    | exp (K.CLOSURE ((formals, body), captured)) =         
+        let val namelist = "$closure" :: formals
+            val lam = S.LAMBDA (namelist,  exp body)
+        in
+            SU.cons lam (SU.list (map S.VAR captured))
+        end
     | exp (K.WHILE (x, e1, e2)) = S.WHILEX (let' x (exp e1) (S.VAR x), exp e2)
-    | exp (K.CLOSURE ((xs, e), [])) = exp (K.FUNCODE (xs, e))
-    (* | exp (K.CLOSURE ((xs, e), captured)) = S. *)
     | exp (K.LET (x, e, K.NAME p)) = (case (x = p) of
                                       true => exp e 
                                       | false => let' x (exp e) (exp (K.NAME p)))
     | exp (K.LET (reg, e1, e2)) = let' reg (exp e1) (exp e2)
-    | exp (K.CLOSURE c) = raise Impossible.impossible "knormal form closure"
-    (* | exp _ = raise Impossible.impossible "knormal form catchall" *)
 
 
    fun def knf_e = S.EXP (exp knf_e)
