@@ -45,9 +45,9 @@ struct
           let
             val free_names = S.diff (free body, S.ofList xs)
             val free_names_list = S.elems (free_names)
-            val _ = app print ["Closure converting ", 
+            (* val _ = app print ["Closure converting ", 
                       WppScheme.expString (VScheme.LAMBDA (xs, VScheme.VAR "...")),
-                      " with free names ", String.concatWith " " free_names_list, "\n"]
+                      " with free names ", String.concatWith " " free_names_list, "\n"] *)
             val capturedExps = closeExp captured 
             val free_expressions = map (capturedExps o X.LOCAL) free_names_list
             
@@ -80,7 +80,7 @@ struct
                     in 
                       C.LET (ListPair.zip (names, map exp exps), exp e)
                     end
-          | exp (X.LETX (X.LETREC, bindings, e)) = C.LETREC (map (fn (n, e) => (n, closure (unLambda e))))
+          | exp (X.LETX (X.LETREC, bindings, e)) = C.LETREC ((map (fn (n, l) => (n, closure(unLambda l))) bindings), exp e)
         in  exp e
     end
 
