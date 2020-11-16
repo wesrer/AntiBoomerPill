@@ -17,22 +17,3 @@
 (check-expect 
   (qsort '(65 15 87 42 62 45 6 81 53 34 33 82 79 7 17 39 71 18 98 92 77 41 51 16 86 30 49 10 4 68 35 52 69 12 85 36 47 5 1 61 74 64 31 80 25 29 93 78 72 24 99 48 76 19 66 70 3 56 23 32 84 100 91 58 20 60 26 37 97 54 46 13 21 63 28 14 59 67 38 88 57 40 55 94 11 95 22 44 27 9 83 50 43 8 90 73 75 96 89 2 ))
   (reverse (iota^ 100)))
-
-
-def emilysfunc (x):
-  i = 0
-
-  def helper n:
-    return n + i 
-
-  return helper (x)
-
-
-
-def emilysfunc (x) :
-  i = 0
-
-  helper = lambda (n) => n + i 
-
-  return helper (x)
-

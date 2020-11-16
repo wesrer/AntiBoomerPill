@@ -83,9 +83,10 @@ struct
                     else (raise Impossible.impossible "registers in funcall not consecutive"))
                  | K.FUNCALL (funreg, []) => S (A.call dest funreg funreg)
                  | K.FUNCODE (xs, e) => S (A.loadfunc dest (List.length xs) ((return e) []))
-                 | K.LETREC (closure_list, e) =>
-                     
-                 | _ =>  Impossible.unimp"codegen")
+                 | K.CAPTURED i => S (A.captured dest i)
+                 | K.CLOSURE ((xs, e), captured) => 
+                 S (A.loadfunc dest (List.length xs) ((return e) [])) o S (A.mkclosure dest ) (toReg' n e1)) 
+                 | _ => Impossible.unimp "codegen")
 
   and forEffect' (e: reg KNormalForm.exp) : instruction hughes_list =
         (case e 

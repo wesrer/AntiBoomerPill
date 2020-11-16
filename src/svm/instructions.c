@@ -52,6 +52,11 @@ instruction_info instructions[] = {
   { "<", LessThan, parseR3, "$rX := $rY < $rZ" },
   { "idiv", IDiv, parseR3, "$rX := $rY idiv $rZ" },
 
+  {"mkclosure", MkClosure, parseR3, "rX := closure[rY,Z]"},
+  {"getclslot", GetClSlot, parseR3, "rX := rY.Z"},
+
+  {"setclslot", SetClSlot, parseR3, "rX.Z := rY"},
+
   {"return", Return, parseR1, "return rX"},
 
   { "error", Error, parseR1, "error $rX" },

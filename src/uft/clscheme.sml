@@ -59,7 +59,6 @@ struct
         let val namelist = "$closure" :: formals
             val lam = S.LAMBDA (namelist,  exp body)
         in
-(**)
             SU.cons lam (SU.list (map exp captured))
         end
     | exp (C.LETREC  (bs, e))  =

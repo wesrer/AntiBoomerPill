@@ -20,6 +20,7 @@ struct
 
   fun curry  f x y   = f (x, y)
   fun curry3 f x y z = f (x, y, z)
+  fun curry_tup f x y z = f ((x, y), z)
 
   (* AsmLex.registerNum takes a string starting with "r" followed by a number n
      such that 0 <= n < 256, and returns n *)
@@ -37,7 +38,8 @@ struct
     | exp (f, K.ASSIGN (x, e)) = curry K.ASSIGN <$> f x <*> exp (f, e)
     | exp (f, K.WHILE (x, e1, e2)) = curry3 K.WHILE <$> f x <*> exp (f, e1) <*> exp (f, e2)
     | exp (f, K.FUNCODE (xs, e)) = curry K.FUNCODE <$> errorList (map f xs) <*> exp (f, e)
-    | exp _ = Impossible.unimp "knrename"
+    | exp (f, K.CAPTURED i) = K.CAPTURED <$> succeed i
+    | exp (f, K.CLOSURE ((xs, e), captured)) = curry_tup K.CLOSURE <$> errorList (map f xs) <*> exp (f, e) <*> errorList (map f xs)
 
   fun mapx f = (fn (x) => exp (f, x))
 end

@@ -173,7 +173,11 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         a.start_window = funreg;
         a.end_window = lastarg;
         a.dest_reg = destreg;
-        a.fun = fun;
+        Value callee = regs[funreg];
+        if (callee.tag == VMFunction)
+          a.fun = callee.f;
+        else if (callee.tag == VMClosure)
+          a.fun = callee.hof->f;
         a.pc = cip;
         if (vm->callstack_size >= vm->callstack_length) {
           runerror(vm, "Stack overflow!");
@@ -182,7 +186,8 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         int n = lastarg - funreg;
         vm->callstack_size++; 
         vm->window += funreg;
-        fun = AS_VMFUNCTION(vm, regs[funreg]);
+        // fun = AS_VMFUNCTION(vm, regs[funreg]);
+
 
         if (n > fun->arity) 
           runerror(vm, "Function arity and arguments mismatched ");
@@ -258,7 +263,7 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       {
         struct VMBlock* bl = AS_BLOCK(vm, regs[uY(i)]);
         if (bl->nslots < 1) 
-          runerror(vm, "car of empty list ");
+          runerror(vm, "car of empty list");
         regs[uX(i)] = bl->slots[0];
         break;
       }
@@ -280,6 +285,29 @@ void vmrun(VMState vm, struct VMFunction *fun) {
           regs[uX(i)] = emptylistValue;
           }
         }
+        break;
+      }
+      case MkClosure:
+      {
+        Number_T nslots = AS_NUMBER(vm, regs[uZ(i)]);
+        struct VMClosure* closure = malloc(sizeof(*closure) + nslots * sizeof(closure->captured[0]));
+        closure->nslots = nslots;
+        closure->f = AS_VMFUNCTION(vm, regs[uY(i)]);
+        regs[uX(i)] = mkClosureValue(closure);
+        break;
+      }
+      case GetClSlot:
+      {
+        struct VMClosure* closure = AS_CLOSURE(vm, regs[uY(i)]);
+        Number_T slot = AS_NUMBER(vm, regs[uZ(i)]);
+        regs[uX(i)] = closure->captured[(int) slot];
+        break;
+      }
+      case SetClSlot:
+      {
+        struct VMClosure* closure = AS_CLOSURE(vm, regs[uX(i)]);
+        Number_T slot = AS_NUMBER(vm, regs[uZ(i)]);
+        closure->captured[(int) slot] =  regs[uX(i)];
         break;
       }
       case Error:

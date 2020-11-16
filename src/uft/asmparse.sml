@@ -202,6 +202,10 @@ eR1 "print" <$> reg : instruction producer *)
    <|> eR3 "<" <$> reg <~> the ":=" <*> reg <~> the "<" <*> reg
    <|> eR3 "idiv" <$> reg <~> the ":=" <*> reg <~> the "idiv" <*> reg
 
+   <|> eR3 "mkclosure" <$> reg <~> the ":=" <~> the "closure" <~> the "[" <*> reg <~> the "," <*> reg <~> the "]"
+   <|> eR3 "getclslot" <$> reg <~> the ":=" <*> reg <~> the "." <*> reg
+   <|> eR3 "getclslot" <$> reg <~> the "." <*> reg <~> the ":=" <*> reg
+
    <|> the "error" >> eR1 "error" <$> reg
    <|> the "printu" >> eR1 "printu" <$> reg
    <|> the "println" >> eR1 "println" <$> reg
@@ -338,6 +342,14 @@ val parse =
             spaceSep [reg x, ":=", "car", reg y]
    | unparse1 (A.OBJECT_CODE (O.REGS ("hash", [x, y]))) =
             spaceSep [reg x, ":=", "hash", reg y]
+
+    | unparse1 (A.OBJECT_CODE (O.REGINT ("mkclosure", x, y, k))) =
+            spaceSep [reg x, ":=", "closure", "[", reg y, ",", Int.toString k, "]"]
+    | unparse1 (A.OBJECT_CODE (O.REGINT ("getclslot", x, y, k))) =
+            spaceSep [reg x, ":=", reg y, ".", Int.toString k]
+    | unparse1 (A.OBJECT_CODE (O.REGINT ("setclslot", x, y, k))) =
+            spaceSep [reg x, ".", Int.toString k, ":=", reg y]
+
     | unparse1 (A.OBJECT_CODE (O.REGS ("cons", [x, y, z]))) =
             spaceSep [reg x, ":=", reg y, "cons", reg z]
    | unparse1 (A.OBJECT_CODE (O.REGS ("=", [x, y, z]))) =
