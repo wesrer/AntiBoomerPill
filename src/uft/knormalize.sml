@@ -76,6 +76,8 @@ struct
         (consec_regs, exp env' reg_set' x)
       end
 
+  
+
   and exp rho A e =
     let val exp : reg Env.env -> regset -> ClosedScheme.exp -> exp = exp
         val nbRegs = nbRegsWith (exp rho)   (* normalize and bind in _this_ environment *)
@@ -85,6 +87,14 @@ struct
       fun removeRegisters reg_set [] = reg_set
         | removeRegisters reg_set (x::xs) = removeRegisters (reg_set -- x) xs
       fun bind_rho rs names = ListPair.foldl (fn (n, r, env) => Env.bind (n, r, env)) rho (names, rs)
+      (* fun funcode (nl, e) =  
+              let
+                fun collate (n, (rho, A)) = (E.bind (n, smallest A, rho), A -- (smallest A))
+                val (rho', A') = List.foldl collate (rho, RS 0) ("zero"::nl)
+                val body = exp rho' A' e
+                val ls = List.tabulate (List.length nl, (fn x => x + 1))
+              in (ls, body)
+              end *)
     in  
         case e of 
           F.LITERAL v => K.LITERAL v
@@ -106,7 +116,8 @@ struct
                                                             end)
                               end    
         | F.CLOSURE ((formals, e), []) => K.CLOSURE (funcode (formals, e) (rho, RS 0), [])
-        | F.CLOSURE ((formals, e), captured) => nbRegs bindAnyReg A captured (fn rs =>  K.CLOSURE (funcode (formals, e) (rho, RS 0), rs))
+        | F.CLOSURE ((formals, e), captured) => nbRegs bindAnyReg A captured
+                                                (fn rs =>  K.CLOSURE (funcode (formals, e) (rho, RS 0), rs))
         | F.LETREC (bindings, body) => Impossible.exercise "LETREC"
         | F.CAPTURED i => K.CAPTURED i
     end
@@ -132,7 +143,7 @@ struct
         | F.CHECK_EXPECT (s1, e1, s2, e2) => K.SEQ ((helper e1 P.check (ObjectCode.STRING s1) reg_set env), (helper e2 P.expect (ObjectCode.STRING s2) reg_set env))
         | F.CHECK_ASSERT (s, x) => (helper x P.check_assert (ObjectCode.STRING s) reg_set env)
         | F.VAL (name, x) => exp env reg_set (F.SETGLOBAL (name, x))
-        | F.DEFINE (fun_name, (formals, x)) =>  let val fun_env = (Env.bind (fun_name, 0, env), RS 1)
+        | F.DEFINE (fun_name, (formals, x)) => let val fun_env = (Env.bind (fun_name, 0, env), RS 1)
                                                   in
                                                     K.LET (0, K.FUNCODE (funcode (formals, x) fun_env), KNormalUtil.setglobal (fun_name, 0))
                                                   end

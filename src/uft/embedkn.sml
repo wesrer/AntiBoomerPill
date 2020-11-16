@@ -44,7 +44,7 @@ struct
     | exp (K.FUNCODE (xs, e)) = S.LAMBDA (xs, exp e)
     | exp (K.FUNCALL (x, xs)) = S.APPLY ((S.VAR x), map S.VAR xs)                                  
     | exp (K.IF_EXP (reg, e1, e2)) = S.IFX ((S.VAR reg), exp e1, exp e2)
-    | exp (K.CAPTURED i) = S.APPLY  (S.VAR "CAPTURED-IN", [S.LITERAL (S.NUM i), S.VAR "$closure"])
+    | exp (K.CAPTURED i) = S.APPLY (S.VAR "CAPTURED-IN", [S.LITERAL (S.NUM i), S.VAR "$closure"])
     | exp (K.CLOSURE ((formals, body), captured)) =         
         let val namelist = "$closure" :: formals
             val lam = S.LAMBDA (namelist,  exp body)

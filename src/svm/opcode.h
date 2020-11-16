@@ -38,6 +38,10 @@ typedef enum opcode {
                         Nil_Observer,
                         Cdr,
                         Car,
+
+                        MkClosure,
+                        GetClSlot,
+                        SetClSlot,
                       
                         Cons,
                         IDiv,

@@ -53,6 +53,14 @@ structure AsmGen :> sig
 
   val areConsecutive : reg list -> bool
 
+  val mkclosure : reg -> reg -> int -> instruction
+    (* x := new closure with k slots; x->f := y; *)
+  val setclslot : reg -> int -> reg -> instruction
+    (* x.k := y *)
+  val getclslot : reg -> reg -> int -> instruction
+    (* x := y.k *)
+  val captured : reg -> int -> instruction
+
 end
   =
 struct
@@ -120,6 +128,19 @@ struct
   fun call dest function lastarg = regs "call" [dest, function, lastarg]
   fun tailcall  function lastarg = regs "tailcall" [function, lastarg]
   fun return r   = i O.REGS ("return", [r])
+
+  (* val mkclosure : reg ‑> reg ‑> int ‑> instruction *)
+    (* x := new closure with k slots; x‑>f := y; *)
+  (* val setclslot : reg ‑> int ‑> reg ‑> instruction *)
+    (* x.k := y *)
+  (* val getclslot : reg ‑> reg ‑> int ‑> instruction *)
+    (* x := y.k *)
+
+  fun mkclosure dest closure k = i O.REGINT ("mkclosure", dest, closure, k)
+  fun setclslot dest k closure = i O.REGINT ("setclslot", dest, closure, k)
+  fun getclslot dest closure k = i O.REGINT ("getclslot", dest, closure, k)
+
+  fun captured dest k = getclslot dest 0 k
 
   val rec areConsecutive : ObjectCode.reg list -> bool
     = fn []  => true
