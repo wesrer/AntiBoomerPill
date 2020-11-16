@@ -136,9 +136,9 @@ struct
   (* val getclslot : reg ‑> reg ‑> int ‑> instruction *)
     (* x := y.k *)
 
-  fun mkclosure dest closure k = i O.REGINT ("mkclosure", dest, closure, k)
-  fun setclslot dest k closure = i O.REGINT ("setclslot", dest, closure, k)
-  fun getclslot dest closure k = i O.REGINT ("getclslot", dest, closure, k)
+  fun mkclosure x closure k = i O.REGINT ("mkclosure", x, closure, k)
+  fun setclslot x k closure = i O.REGINT ("setclslot", x, closure, k)
+  fun getclslot x closure k = i O.REGINT ("getclslot", x, closure, k)
 
   fun captured dest k = getclslot dest 0 k
 

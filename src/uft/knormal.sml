@@ -24,6 +24,7 @@ structure KNormalForm = struct
     | FUNCODE of 'a list * 'a exp
     | CAPTURED  of int
     | CLOSURE  of 'a closure
+    | LETREC of ('a * 'a closure) list * 'a exp
     withtype 'a closure = ('a list * 'a exp) * 'a list
         (* (funcode, registers holding values of captured variables) *)
     type 'a funcode = 'a list * 'a exp  (* lambda with no free names *)

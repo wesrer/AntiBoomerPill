@@ -118,8 +118,22 @@ struct
         | F.CLOSURE ((formals, e), []) => K.CLOSURE (funcode (formals, e) (rho, RS 0), [])
         | F.CLOSURE ((formals, e), captured) => nbRegs bindAnyReg A captured
                                                 (fn rs =>  K.CLOSURE (funcode (formals, e) (rho, RS 0), rs))
-        | F.LETREC (bindings, body) => Impossible.exercise "LETREC"
+        | F.LETREC (bindings, body) => 
+          let 
+            fun fr len r = List.tabulate (len, (fn i => i + r))
+            val (names, closures) = ListPair.unzip bindings
+            val ts = fr (List.length bindings) (smallest A)
+            val A' = removeRegisters A ts
+            val rho' = ListPair.foldrEq (fn (n,r, rho) => Env.bind (n,r, rho)) rho (names, ts)
+            fun closure (fc, captured) k = 
+                  nbRegsWith (exp rho') bindAnyReg A' captured
+                  (fn rs => k (funcode fc, rs))
+          in
+            map' (closure o snd) bindings (fn cs =>  K.LETREC (ListPair.zip (ts, cs), exp rho' A' body))
+          end
+        fun closure ((formals, e), captured) k = nbRegsWith (exp rho') bindSmallest A' captured (fn rl => k K.CLOSURE ((formals, e), rl))
         | F.CAPTURED i => K.CAPTURED i
+
     end
 
   fun helper e p v reg_set env = bindAnyReg reg_set (exp env reg_set e) (fn (x) => K.VMOP_LIT (p, [x], v))

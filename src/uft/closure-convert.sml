@@ -31,6 +31,9 @@ struct
     in  find 0 xs
     end
 
+  fun unLambda (X.LAMBDA lambda) = lambda
+    | unLambda _ = Impossible.impossible "parser failed to insist on a lambda"
+
   and closeExp captured e =
     (* Given an expression `e` in Unambiguous vScheme, plus a list
        of the free variables of that expression, return the closure-
@@ -42,7 +45,10 @@ struct
           let
             val free_names = S.diff (free body, S.ofList xs)
             val free_names_list = S.elems (free_names)
-            val capturedExps = closeExp captured
+            val _ = app print ["Closure converting ", 
+                      WppScheme.expString (VScheme.LAMBDA (xs, VScheme.VAR "...")),
+                      " with free names ", String.concatWith " " free_names_list, "\n"]
+            val capturedExps = closeExp captured 
             val free_expressions = map (capturedExps o X.LOCAL) free_names_list
             
           in
@@ -74,11 +80,8 @@ struct
                     in 
                       C.LET (ListPair.zip (names, map exp exps), exp e)
                     end
-          | exp (X.LETX (X.LETREC, bindings, e)) = 
-                    let val (names, exps) = ListPair.unzip bindings
-                    in 
-                      C.LET (ListPair.zip (names, map exp exps), exp e)
-                    end    in  exp e
+          | exp (X.LETX (X.LETREC, bindings, e)) = C.LETREC (map (fn (n, e) => (n, closure (unLambda e))))
+        in  exp e
     end
 
   and free (X.LOCAL n) = S.insert (n, S.empty)
@@ -106,7 +109,7 @@ struct
       in 
         S.union' [free_body, name_diff]
       end
-    | free (X.LAMBDA (names, exp)) = free exp
+    | free (X.LAMBDA (names, exp)) = S.union' [S.diff (free exp, S.ofList names)]
 
   val _ = free : X.exp -> X.name S.set
 
