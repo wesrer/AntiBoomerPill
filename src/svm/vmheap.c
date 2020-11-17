@@ -42,7 +42,7 @@
 /********************************* HEAP PAGES ********************************/
 
 #ifdef SMALLHEAP
-  #define PAGESIZE 6000   // bytes in one page, just big enough for globals table
+  #define PAGESIZE 600   // bytes in one page, just big enough for globals table
 #else
   #define PAGESIZE (32*1024)   // bytes in one page
 #endif
@@ -88,10 +88,16 @@ Page available;
 static char *next, *limit;
   // if not NULL, pointers into current page
 
-static struct count { // number of pages in each linked list
-  int current;
-  int available;
-} count = { 0, 0 };
+static struct count { // things that can be counted on lists
+  struct {
+    int pages;
+    int objects;         // number of objects allocated
+    int bytes_requested; // number of bytes requested for those objects
+  } current;
+  struct {
+    int pages;
+  } available; // this is free space; there aren't any objects
+} count; // C semantics guarantee all 0 at startup
 
 /* TERMINOLOGY AND INVARIANTS:
 
@@ -139,10 +145,10 @@ static int free_pages(Page pages);
   // Gives every page on the list back to the OS, and returns
   // the number of pages so freed.
 
-static int make_invalid(Page pages);
-  // For debugging: takes every page on the list, tells valgrind it's off
-  // limits, arranges never to use that memory again, and puts it on the 
-  // `invalid` list
+static int make_invalid_and_stomp(Page pages);
+  // For debugging: takes every page on the list, fills it with ones,
+  // tells valgrind it's off limits, arranges never to use that memory again,
+  // and puts it on the `invalid` list.  NOT TESTED!
 Page invalid; // list of invalid pages
 
 static bool onpagelist(void *p, Page pages);
@@ -189,8 +195,8 @@ static struct { // totals of various actions (for statistics)
 bool gc_in_progress;  // controls accounting of requests
 
 void heap_init(void) {
-  (void)make_invalid;  // you may use this to debug, but if there are no bugs,
-                       // it is not needed
+  (void)make_invalid_and_stomp;  // you may use this to debug, but if there are no bugs,
+                                 // it is not needed
   gray = VStack_new();
   gc_debug_init();
   take_available_page();
@@ -199,8 +205,8 @@ void heap_init(void) {
 void heap_shutdown(void) {
   int ccount = free_pages(current);
   int acount = free_pages(available);
-  assert(ccount == count.current);
-  assert(acount == count.available);
+  assert(ccount == count.current.pages);
+  assert(acount == count.available.pages);
 
   current = available = NULL;
 
@@ -222,10 +228,10 @@ void heap_shutdown(void) {
             "The collector copied %.2f byte%s for every byte requested\n",
             copies_per_alloc, decicopies == 100 ? "" : "s");
     fprint(stderr, "At exit, heap contained %, used pages "
-           "and %, available pages\n", count.current, count.available);
+           "and %, available pages\n", count.current.pages, count.available.pages);
     fprint(stderr, "Total heap size is %, bytes held in %, pages\n",
-           PAGESIZE * (count.current + count.available),
-           count.current + count.available);
+           PAGESIZE * (count.current.pages + count.available.pages),
+           count.current.pages + count.available.pages);
   }
 
 }
@@ -280,11 +286,14 @@ static inline void *alloc_small(size_t n) {
   VALGRIND_MEMPOOL_ALLOC(current, object, nbytes);
 
   // track statistics
+  count.current.objects++;
+  count.current.bytes_requested += n;
+
   if (gc_in_progress) {
-    total.bytes_copied += nbytes;
+    total.bytes_copied += n;
   } else {
     total.allocations++;
-    total.bytes_requested += nbytes;
+    total.bytes_requested += n;
   }
 
   return object;
@@ -316,7 +325,7 @@ void *vmcalloc_raw(size_t num, size_t size) {
 /*******  TRIGGERING GARABAGE COLLECTION AND HEAP GROWTH ********/
 
 static int availability_floor = 0; // trigger lots of collections!
-  // When count.available drops to this value (or less),
+  // When count.available.pages drops to this value (or less),
   // a garbage collection is needed.  The minimum safe value
   // is half the heap size (rounded up), and once things are 
   // working, there is no reason to make it any larger.
@@ -648,11 +657,15 @@ extern void gc(struct VMState *vm) {
   (void) target_gamma;   // in step 7
   (void) growheap;       // in step 7
 
-  if (svmdebug_value("gcstats") && strchr(svmdebug_value("gcstats"), '+'))
+  if (svmdebug_value("gcstats") && strchr(svmdebug_value("gcstats"), '+')) {
     fprintf(stderr, "Heap contains %d pages of which %d are live (ratio %.2f)\n",
-            count.available + count.current, count.current,
-            (double)(count.available + count.current) / (double) count.current);
-
+            count.available.pages + count.current.pages, count.current.pages,
+            (double)(count.available.pages + count.current.pages) / (double) count.current.pages);
+    fprint(stderr, "%d of %d objects holding %, of %, requested bytes survived\n",
+            -1, -1, -1, -1);  // you fill in here
+    fprintf(stderr, "Survival rate is %.1f%% of objects and %.1f%% of bytes\n",
+            -1.0, -1.0);  // you fill in here
+  }
   
 }
 
@@ -687,7 +700,7 @@ static void acquire_available_page(void) {
   VALGRIND_CREATE_BLOCK(p, PAGESIZE, "managed page");
   p->link = available;
   available = p;
-  count.available++;
+  count.available.pages++;
   gcprintf("Acquired a new page\n");
 }
 
@@ -710,8 +723,8 @@ static Page newpage(void) {
   assert(available);
   Page new = available;
   available = available->link;
-  count.available--;
-  if (count.available <= availability_floor)
+  count.available.pages--;
+  if (count.available.pages <= availability_floor)
     gc_needed = true;
   return new;
 }
@@ -721,7 +734,7 @@ static void take_available_page(void) {
   new->link = current;
   current = new;
   assert(current);
-  count.current++;
+  count.current.pages++;
   next  = (char *)&current->a;
   limit = (char *)current + PAGESIZE;
 }
@@ -741,13 +754,14 @@ static int free_pages(Page p) { // returns # of pages freed
 
 /************************** RANDOM UTILITY FUNCTIONS **************************/
 
-static int make_invalid(Page pages) {
+static int make_invalid_and_stomp(Page pages) {
   int invalidated = 0;
   while (pages) {
     Page p = pages;
     pages = p->link;
     p->link = invalid;
     invalid = p;
+    memset(p+1, 0xff, PAGESIZE - sizeof(*p));
     VALGRIND_MAKE_MEM_NOACCESS(p, PAGESIZE);
     invalidated++;
   }
@@ -764,7 +778,7 @@ static int make_available(Page pages) {
     p->link = available;
     available = p;
     reclaimed++;
-    count.available++;
+    count.available.pages++;
   }
   return reclaimed;
 }
