@@ -196,7 +196,7 @@ void bprintvalue(Printbuf output, va_list_box *box) {
     case LightUserdata: OUTPUT("userdata %p", (void *) v.p); break;
     case ConsCell:   print_list(output, v); break;
     case Emptylist:  bufputs(output, "'()"); break;
-    default: fprintf(stderr, "ERROR in print.c <tag=%d>\n", v.tag); break;
+    default: fprintf(stderr, "BAD TAG in print.c <tag=%d=0x%x>\n", v.tag, v.tag); break;
     }
 }
 
