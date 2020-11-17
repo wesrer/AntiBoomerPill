@@ -15,6 +15,7 @@
 #include "vmheap.h"
 #include "vmsizes.h"
 #include "vstack.h"
+#include "vmstate.h"
 #include "vtable.h"
 
 #ifndef NOVALGRIND
