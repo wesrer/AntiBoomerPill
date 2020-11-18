@@ -51,14 +51,18 @@ struct
         in
             SU.cons lam (SU.list (map S.VAR captured))
         end
-    (* | exp (K.LETREC (bindings, e)) =  let val (n::names, c::closures) = ListPair.unzip bindings
-                                                      in 
-                                                          S.LETX (S.LETREC, (n, exp c) :: (exp K.LETREC (names, closures)), exp e)   
-                                                      end     *)
+    | exp (K.LETREC (bindings, body)) =  
+        let 
+            fun embed_binding (name, funcode_captured) = (name, exp (K.CLOSURE funcode_captured))
+            val mapped_bindings = map embed_binding bindings
+        in 
+            S.LETX (S.LETREC, mapped_bindings, exp body)   
+        end
     | exp (K.WHILE (x, e1, e2)) = S.WHILEX (let' x (exp e1) (S.VAR x), exp e2)
-    | exp (K.LET (x, e, K.NAME p)) = (case (x = p) of
-                                      true => exp e 
-                                      | false => let' x (exp e) (exp (K.NAME p)))
+    | exp (K.LET (x, e, K.NAME p)) = 
+        (case (x = p)
+         of true => exp e 
+          | false => let' x (exp e) (exp (K.NAME p)))
     | exp (K.LET (reg, e1, e2)) = let' reg (exp e1) (exp e2)
 
 

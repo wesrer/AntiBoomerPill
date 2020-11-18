@@ -39,12 +39,14 @@ struct
     | exp (f, K.WHILE (x, e1, e2)) = curry3 K.WHILE <$> f x <*> exp (f, e1) <*> exp (f, e2)
     | exp (f, K.FUNCODE (xs, e)) = curry K.FUNCODE <$> errorList (map f xs) <*> exp (f, e)
     | exp (f, K.CAPTURED i) = K.CAPTURED <$> succeed i
-    | exp (f, K.CLOSURE ((xs, e), captured)) = curry_tup K.CLOSURE <$> errorList (map f xs) <*> exp (f, e) <*> errorList (map f xs)
-    (* | exp (f, K.LETREC (bindings, e)) = curry K.LETREC <$> errorList (map (fn (h,t) => (f h, exp (f, t))) bindings) <*> exp (f, e) *)
-    | exp _ = raise Impossible.exercise "knrename letrec"
-    (* | LETREC of ('a * 'a closure) list * 'a exp *)
-
-
+    | exp (f, K.CLOSURE ((xs, e), captured)) = curry_tup K.CLOSURE <$> errorList (map f xs) <*> exp (f, e) <*> errorList (map f captured)
+    | exp (f, K.LETREC (bindings, body)) = 
+        (let
+           fun rearrange f x y z = (f,((x, y), z))
+           fun map_fn (closure, ((xs, lambda_es), captured)) = rearrange <$> f closure <*> errorList (map f xs) <*> exp (f, lambda_es) <*> errorList (map f captured)
+        in 
+           curry K.LETREC <$> errorList (map map_fn bindings)<*> exp (f, body) 
+        end)
 
   fun mapx f = (fn (x) => exp (f, x))
 end
