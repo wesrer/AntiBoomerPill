@@ -126,20 +126,20 @@ struct
                                                 (fn rs =>  K.CLOSURE (funcode (formals, e) (rho, RS 0), rs))
         | F.LETREC (bindings, body) => 
               let 
-                fun fr len r = List.tabulate (len, (fn i => i + r))
+                fun fr len = List.tabulate (len, (fn i => i + (smallest A)))
                 val (names, closures) = ListPair.unzip bindings
-                val ts = fr (List.length bindings) (smallest A)
+                val ts = fr (List.length bindings)
                 val A' = removeRegisters A ts
                 val rho' = ListPair.foldrEq (fn (n,r, rho) => Env.bind (n,r, rho)) rho (names, ts)
                 fun closure (lam, captured) k = 
                       nbRegsWith (exp rho') bindAnyReg A' captured
-                      (fn rs => k (funcode lam, rs))
+                      (fn rs => k (funcode lam (rho', A'), rs))
+                val cont = (fn cs => 
+                      K.LETREC (ListPair.zipEq (ts, cs), exp rho' A' body))
               in
-                map' (closure o snd) bindings (fn cs => )
-                (* map' (closure o snd) bindings (fn cs => let val cs' = map (fn ((i,j),n) => (i,j,n)) cs in K.LETREC (ListPair.zip (ts, cs'), exp rho' A' body) end) *)
+                map' closure closures cont 
               end
         | F.CAPTURED i => K.CAPTURED i
-        | _ => raise Impossible.exercise "knormalize"
 
     end
 

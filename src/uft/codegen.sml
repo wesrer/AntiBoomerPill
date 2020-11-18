@@ -47,17 +47,24 @@ struct
     in  go 0 xs
     end
 
-  (* fun letrec gen (bindings, body) =
+  (* val setclslot : reg ‑> int ‑> reg ‑> instruction *)
+    (* x.k := y *)
+  (* fun setclslot x k closure = i O.REGINT ("setclslot", x, closure, k) *)
+
+  fun letrec gen (bindings, body) =
    let val _ = letrec : (reg K.exp -> instruction hughes_list)
                      -> (reg * reg K.closure) list * reg K.exp
                      -> instruction hughes_list
       (* one helper function to allocate and another to initialize *)
-      fun alloc (f_i, (formals, body, captures)) = S (A.mkclosure f_i f_i (List.length formals))
-      fun init  (f_i, (formals, body, captures)) = L (mapi (fn (k, x) => A.setclslot x 0 k) captures)
+      fun alloc (f_i, closure as (funcode as (formals, body), captures)) =
+               toReg' f_i (K.FUNCODE funcode) o 
+               S (A.mkclosure f_i f_i (List.length captures))
+      fun init  (f_i, closure as (funcode as (formals, body), captures)) = 
+                L (mapi (fn (k, x) => A.setclslot k x f_i) captures)
   in  hconcat (map alloc bindings) o hconcat (map init bindings) o gen body
-  end *)
+  end
 
-  fun toReg' (dest : reg) (e : reg KNormalForm.exp) : instruction hughes_list =
+and toReg' (dest : reg) (e : reg KNormalForm.exp) : instruction hughes_list =
         (case e of K.ASSIGN (x, e) => (toReg' x e) o (S (A.copyreg dest x))
                  | K.NAME x => S (A.copyreg dest x)
                  | K.LITERAL lit => S (A.loadlit dest lit)
@@ -87,11 +94,9 @@ struct
                  | K.FUNCODE (xs, e) => S (A.loadfunc dest (List.length xs) ((return e) []))
                  | K.CAPTURED i => S (A.captured dest i)
                  | K.CLOSURE ((xs, e), captured) =>  S (A.loadfunc dest (List.length xs) ((return e) [])) o 
-                                                     S (A.mkclosure dest 0 (List.length captured)) o 
-                                                     L (mapi (fn (k, x) => A.setclslot x 0 k) captured)
-                 (* | K.LETREC (closure_names, e) =>  letrec toReg' (closure_names, e))                     *)
-                 (* S (A.loadfunc dest (List.length xs) ((return e) [])) o S (A.mkclosure dest ) (toReg' n e1))  *)
-                 | _ => Impossible.unimp "codegen")
+                                                     S (A.mkclosure dest dest (List.length captured)) o 
+                                                     L (mapi (fn (slot_num, value) => A.setclslot dest value slot_num) captured)
+                 | K.LETREC (closure_names, e) =>  letrec (toReg' dest) (closure_names, e))                    
 
   and forEffect' (e: reg KNormalForm.exp) : instruction hughes_list =
         (case e 

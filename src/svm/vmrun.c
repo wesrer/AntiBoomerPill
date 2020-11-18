@@ -307,7 +307,7 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       {
         struct VMClosure* closure = AS_CLOSURE(vm, regs[uX(i)]);
         Number_T slot = AS_NUMBER(vm, regs[uZ(i)]);
-        closure->captured[(int) slot] =  regs[uX(i)];
+        closure->captured[(int) slot] =  regs[uY(i)];
         break;
       }
       case Error:

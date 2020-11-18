@@ -40,7 +40,11 @@ struct
     | exp (f, K.FUNCODE (xs, e)) = curry K.FUNCODE <$> errorList (map f xs) <*> exp (f, e)
     | exp (f, K.CAPTURED i) = K.CAPTURED <$> succeed i
     | exp (f, K.CLOSURE ((xs, e), captured)) = curry_tup K.CLOSURE <$> errorList (map f xs) <*> exp (f, e) <*> errorList (map f xs)
-    | exp (f, K.LETREC (closure_names, e)) = raise Impossible.impossible "letrec in knrename"
+    (* | exp (f, K.LETREC (bindings, e)) = curry K.LETREC <$> errorList (map (fn (h,t) => (f h, exp (f, t))) bindings) <*> exp (f, e) *)
+    | exp _ = raise Impossible.exercise "knrename letrec"
+    (* | LETREC of ('a * 'a closure) list * 'a exp *)
+
+
 
   fun mapx f = (fn (x) => exp (f, x))
 end
