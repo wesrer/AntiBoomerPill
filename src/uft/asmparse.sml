@@ -9,7 +9,6 @@ structure AsmParse :>
     val unparse1 : AssemblyCode.instr -> string 
     val unparse : AssemblyCode.instr list -> string list (* use me if there are functions *)
     (* type line = string one line of assembly code *)
-    type line = string (* one line of assembly code *)
   end
   =
 struct
@@ -146,13 +145,11 @@ struct
  eR3 "+" : 'a -> 'c -> 'd -> instr
  eR3 "+" <$> : ('c -> 'd -> instr) producer 
  ('d -> instr) producer
-
  eR1 "print": 'a -> instruction 
  
 eR1 "print" <$> reg : instruction producer *)
 
 (* 'a -> 'b -> instr
-
 'b -> instr producer *)
 
   (* parser to read an instruction /without/ reading end of line *)
