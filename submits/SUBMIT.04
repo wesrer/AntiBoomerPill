@@ -1,0 +1,89 @@
+COMP 150VM Homework Submission
+
+What person or group is submitting this homework?
+
+<<<<<<< HEAD
+  Aditi Kocherlakota and Emily Gheewalla
+
+What work are you proud of?
+
+  - our parser!
+=======
+  - 
+
+What work are you proud of?
+
+  - 
+>>>>>>> upstream/master
+
+What code would you like help improving?  Are there bugs you'd like
+help finding during code review?
+
+<<<<<<< HEAD
+  - nil case for parsing literals, and unparsing literals. 
+=======
+  - 
+>>>>>>> upstream/master
+
+What code, if any, would you especially like the course staff to
+review?  Why?
+
+<<<<<<< HEAD
+  - unparse1 (handling of literals), function loading parser,
+   our nil case for parsing literals, labelElim,
+   because we're not sure if they are right.
+=======
+  -
+>>>>>>> upstream/master
+
+In this course, all code may be shared freely.  Aside from code that
+is distributed with the assignment, does your submission contain any
+other code that you got from someone else?  If so, what code is it
+(file names and line numbers please) and who supplied it?
+
+<<<<<<< HEAD
+  - We worked closely with Janny for labelElim, since Aditi and Janny worked
+  together for lab all of the code is the same. Lines of code in assembelr.sml.
+=======
+  - 
+>>>>>>> upstream/master
+
+In response to last week's code review, have you made any material
+changes?  What were they?  By file name and line number, where are
+they found in the code?  If you remember, who helped you during code
+review?
+
+<<<<<<< HEAD
+  - We talked to Ben and janny about unparse.
+=======
+  - 
+>>>>>>> upstream/master
+
+
+We have a plenary code review tomorrow.  Are you willing to present
+(as a group, if applicable)?
+
+<<<<<<< HEAD
+  - Sure!
+=======
+  - 
+>>>>>>> upstream/master
+
+Supposing you are not selected to present at tomorrow's plenary code
+review, what code would you like to see presented?  What would you
+learn the most from?
+
+<<<<<<< HEAD
+  -  labelElim, another look at unparse, and all of the parsing combinators
+=======
+  - 
+>>>>>>> upstream/master
+
+Again supposing you are not selected to present, who in your group is
+willing to serve on the review panel?
+
+<<<<<<< HEAD
+  - We both are!
+=======
+  - 
+>>>>>>> upstream/master
