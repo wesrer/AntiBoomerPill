@@ -51,6 +51,7 @@ end
 structure UnambiguousVScheme = struct
   type name = string
   type primitive = Primitive.primitive
+  datatype let_kind = datatype VScheme.let_kind
   datatype exp = LITERAL   of value
                | LOCAL     of name
                | GLOBAL    of name
@@ -96,7 +97,6 @@ structure UnambiguousVScheme = struct
     | whatIs (LAMBDA (xs, e))                 = "LAMBDA"
 
 end
-
 
 structure VSchemeTests : sig
   val delay : VScheme.def list -> VScheme.def list  (* put tests at end *)

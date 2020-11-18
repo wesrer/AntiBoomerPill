@@ -79,6 +79,7 @@ static inline Value mkVMFunctionValue(struct VMFunction *f);
 static inline Value mkClosureValue(struct VMClosure *cl);
 static inline Value mkBlockValue(struct VMBlock *bl);
 static inline Value mkConsValue(struct VMBlock *bl);
+static inline Value mkTableValue(struct VTable_T *table);
 
 ////// observation/elimination for values
 
@@ -302,6 +303,14 @@ static inline bool isSymbol(Value v) {
 static inline bool isNumber(Value v) {
   return v.tag == Number;
 }
+static inline Value mkTableValue(struct VTable_T *t) {
+  Value val;
+  val.tag = Table;
+  val.table = t;
+  return val;
+}
+
+
 
 
 #endif

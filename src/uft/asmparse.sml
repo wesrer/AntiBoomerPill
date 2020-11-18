@@ -9,6 +9,7 @@ structure AsmParse :>
     val unparse1 : AssemblyCode.instr -> string 
     val unparse : AssemblyCode.instr list -> string list (* use me if there are functions *)
     (* type line = string one line of assembly code *)
+    type line = string (* one line of assembly code *)
   end
   =
 struct

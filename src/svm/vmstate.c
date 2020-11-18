@@ -41,6 +41,18 @@ VMState newstate(void) {
 }
 
 int literal_slot(VMState state, Value literal) {
+    (void)vm; // suppress compiler warnings
+    assert(0); // must free all memory associated with `vm`
+}
+
+VMState newstate(void) {
+    // allocate, initialize, and return a new state
+    assert(0);
+}
+
+int literal_slot(VMState state, Value literal) {
+    (void)state; // suppress compiler warnings
+    (void)literal;
     // Return a slot containing the literal, updating literal pool if needed.
     // For module 1, you can get away with putting the literal in slot 0
     // and returning 0.  For module 2, you'll need something slightly
