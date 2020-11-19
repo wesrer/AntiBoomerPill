@@ -18,13 +18,15 @@ typedef struct VMState {
   	int ip;
 
     // //Instructions
-	  Instruction* instructions;
+	  // Instruction* instructions;
 
     // //Registers
 	  Value* registers;
 
     // //Literal Pool
     Value* literal_pool;
+
+    struct VMFunction *fun;
 
     struct Activation* callstack;
 

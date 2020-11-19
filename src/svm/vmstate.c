@@ -18,7 +18,7 @@
 void freestatep(VMState *sp) {
     assert(sp && *sp);
     VMState vm = *sp;
-    free(vm->instructions);
+    // free(vm->instructions);
     free(vm->registers);
     free(vm->literal_pool);
     free(vm);
@@ -29,7 +29,7 @@ VMState newstate(void) {
     VMState state = malloc(sizeof(*state));
     state->ip = 0;
     state->num_literals = 0;
-    state->instructions = NULL;
+    // state->instructions = NULL;
     state->registers= calloc(5000, sizeof(Value));
     state->callstack_length = 500;
     state->callstack_size = 0;
@@ -41,18 +41,6 @@ VMState newstate(void) {
 }
 
 int literal_slot(VMState state, Value literal) {
-    (void)vm; // suppress compiler warnings
-    assert(0); // must free all memory associated with `vm`
-}
-
-VMState newstate(void) {
-    // allocate, initialize, and return a new state
-    assert(0);
-}
-
-int literal_slot(VMState state, Value literal) {
-    (void)state; // suppress compiler warnings
-    (void)literal;
     // Return a slot containing the literal, updating literal pool if needed.
     // For module 1, you can get away with putting the literal in slot 0
     // and returning 0.  For module 2, you'll need something slightly

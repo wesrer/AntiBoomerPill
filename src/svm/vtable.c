@@ -26,7 +26,6 @@ struct T {
 	} **buckets;
 };
 
-extern T* VTable_forwarded(T vtable) {
 void *firstbucket(T table) {
   void *p = table->buckets[0];
   if (p)
