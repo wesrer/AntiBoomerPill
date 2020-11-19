@@ -1,12 +1,12 @@
-(* Closure conversion from unambiguous VScheme to Closed Scheme. 
+(* Closure conversion from unambiguous VScheme to Closed Scheme.
     This is where we handle lambda and captured variables *)
 
 (* You'll write this file *)
 
 structure ClosureConvert :> sig
   val close : UnambiguousVScheme.def -> ClosedScheme.def
-end 
-= 
+end
+=
 struct
   structure X = UnambiguousVScheme
   structure C = ClosedScheme
@@ -23,10 +23,10 @@ struct
   (define o (f g) (lambda (x) (f (g x))))
 *)
 
-  fun indexOf x xs = 
+  fun indexOf x xs =
     (* returns `SOME i`, where i is the position of `x` in `xs`,
        or if `x` does not appear in `xs`, returns `NONE` *)
-    let fun find k []        = NONE 
+    let fun find k []        = NONE
           | find k (y :: ys) = if x = y then SOME k else find (k + 1) ys
     in  find 0 xs
     end
@@ -41,16 +41,18 @@ struct
     let val _ = closeExp : X.name list -> X.exp -> C.exp
 
         (* I recommend internal function closure : X.lambda -> C.closure *)
-        fun closure (xs, body) = 
+        fun closure (xs, body) =
           let
             val free_names = S.diff (free body, S.ofList xs)
             val free_names_list = S.elems (free_names)
-            val _ = app print ["Closure converting ", 
+            (*
+            val _ = app print ["Closure converting ",
                       WppScheme.expString (VScheme.LAMBDA (xs, VScheme.VAR "...")),
                       " with free names ", String.concatWith " " free_names_list, "\n"]
-            val capturedExps = closeExp captured 
+            *)
+            val capturedExps = closeExp captured
             val free_expressions = map (capturedExps o X.LOCAL) free_names_list
-            
+
           in
             ((xs, closeExp free_names_list body), free_expressions)
           end
@@ -59,25 +61,25 @@ struct
 
         (* I recommend internal function exp : X.exp -> C.exp *)
         fun exp (X.LITERAL v) = C.LITERAL (literal v)
-          | exp (X.LOCAL n) = 
-            (case (indexOf n captured) of   
+          | exp (X.LOCAL n) =
+            (case (indexOf n captured) of
                 NONE => C.LOCAL n
               | SOME i => C.CAPTURED i)
           | exp (X.GLOBAL n) = C.GLOBAL n
           | exp (X.IFX (e1, e2, e3)) = C.IFX (exp e1, exp e2, exp e3)
           | exp (X.WHILEX (e1, e2)) = C.WHILEX (exp e1, exp e2)
           | exp (X.BEGIN es) = C.BEGIN (map exp es)
-          | exp (X.SETLOCAL (n, e)) = 
-            (case (indexOf n captured) of   
+          | exp (X.SETLOCAL (n, e)) =
+            (case (indexOf n captured) of
                 NONE => C.SETLOCAL(n, exp e)
               | SOME i => Impossible.impossible "Attemping to write a captured variable. Stop.")
           | exp (X.SETGLOBAL (n, e)) = C.SETGLOBAL (n, exp e)
           | exp (X.FUNCALL (e, es)) = C.FUNCALL (exp e, map exp es)
           | exp (X.PRIMCALL (p, es)) = C.PRIMCALL (p, map exp es)
           | exp (X.LAMBDA (xs, e)) = C.CLOSURE (closure (xs, e))
-          | exp (X.LETX (X.LET, bindings, e)) = 
+          | exp (X.LETX (X.LET, bindings, e)) =
                     let val (names, exps) = ListPair.unzip bindings
-                    in 
+                    in
                       C.LET (ListPair.zip (names, map exp exps), exp e)
                     end
           | exp (X.LETX (X.LETREC, bindings, e)) = C.LETREC (map (fn (n, e) => (n, closure (unLambda e))))
@@ -94,19 +96,19 @@ struct
     | free (X.BEGIN es) =  S.union' (map free es)
     | free (X.FUNCALL (e, es)) = S.union' (map free (e::es))
     | free (X.PRIMCALL (p, es)) = S.union' (map free es)
-    | free (X.LETX (X.LET, bindings, e)) = 
+    | free (X.LETX (X.LET, bindings, e)) =
       let val (names, exps) = ListPair.unzip bindings
-          val free_exps = map free exps 
+          val free_exps = map free exps
           val free_body = S.diff (free e, S.ofList names)
-      in 
+      in
         S.union' (free_body :: free_exps)
       end
-    | free (X.LETX (X.LETREC, bindings, e)) = 
+    | free (X.LETX (X.LETREC, bindings, e)) =
       let val (names, exps) = ListPair.unzip bindings
           val free_exps = map free exps
           val name_diff = S.diff (S.union' free_exps, S.ofList names)
           val free_body = S.diff (free e, S.ofList names)
-      in 
+      in
         S.union' [free_body, name_diff]
       end
     | free (X.LAMBDA (names, exp)) = S.union' [S.diff (free exp, S.ofList names)]
