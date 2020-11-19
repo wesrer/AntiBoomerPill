@@ -56,5 +56,6 @@ typedef enum opcode {
                         Return
 } Opcode;
 
+int isgetglobal(Opcode code); // update this for your SVM, in instructions.c
 
 #endif

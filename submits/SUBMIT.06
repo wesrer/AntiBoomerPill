@@ -2,56 +2,87 @@ COMP 150VM Homework Submission
 
 What person or group is submitting this homework?
 
-  - Aditi Kocherlakota
-
-Not counting code that was distributed to everyone, what code was
-contributed by other persons or groups?  Who were the contributors?
-
-  - None
+<<<<<<< HEAD
+  Aditi Kocherlakota
 
 What work are you proud of?
 
-  - I enjoyed writing the projectbool instruction!
+  functions in codegen!
+=======
+  - 
+
+What work are you proud of?
+
+  - 
+>>>>>>> upstream/master
 
 What code would you like help improving?  Are there bugs you'd like
 help finding during code review?
 
-  - couldn't free all memory correctly
+<<<<<<< HEAD
+  
+=======
+  - 
+>>>>>>> upstream/master
 
 What code, if any, would you especially like the course staff to
 review?  Why?
 
-  -loadfun- not sure if I implemented maxgrep correctly.
+<<<<<<< HEAD
+  - When I run the test for step 8, or any other test, the lines of assembly
+  code are backwards and I have no idea why. Therefore I am not able to pass step 12
+=======
+  -
+>>>>>>> upstream/master
 
 In this course, all code may be shared freely.  Aside from code that
 is distributed with the assignment, does your submission contain any
 other code that you got from someone else?  If so, what code is it
 (file names and line numbers please) and who supplied it?
 
-  - Nope
+<<<<<<< HEAD
+Me and Danielle worked on lab together, so code in uft.sml on line
+77 and 81 is similar
+=======
+  - 
+>>>>>>> upstream/master
 
 In response to last week's code review, have you made any material
 changes?  What were they?  By file name and line number, where are
 they found in the code?  If you remember, who helped you during code
 review?
 
-  - I cached the registers on line 34 of vmrun.c. Ben and Lulu helped
-	me last week.
+<<<<<<< HEAD
+  - No
+=======
+  - 
+>>>>>>> upstream/master
 
 
 We have a plenary code review tomorrow.  Are you willing to present
 (as a group, if applicable)?
 
-  - Sure!
+<<<<<<< HEAD
+  - Yes
+=======
+  - 
+>>>>>>> upstream/master
 
 Supposing you are not selected to present at tomorrow's plenary code
 review, what code would you like to see presented?  What would you
 learn the most from?
 
-  - I'd like to see an alternate representation of literal_slot that allows for no
-	space to be wasted.
+<<<<<<< HEAD
+  - scheme test code
+=======
+  - 
+>>>>>>> upstream/master
 
 Again supposing you are not selected to present, who in your group is
 willing to serve on the review panel?
 
-  - I can!
+<<<<<<< HEAD
+  - I am
+=======
+  - 
+>>>>>>> upstream/master

@@ -25,7 +25,6 @@ typedef Instruction (*InstructionParser)(VMState, Opcode, Tokens, unsigned *maxr
   // update *maxregp with the largest register seen,
   // and return the encoded instruction.  If the opcode
   // calls for a literal, ensures the literal appears in the VM's pool.
-  
 Instruction parseR3   (VMState, Opcode, Tokens, unsigned *maxregp);
 Instruction parseR2   (VMState, Opcode, Tokens, unsigned *maxregp);
 Instruction parseR1   (VMState, Opcode, Tokens, unsigned *maxregp);

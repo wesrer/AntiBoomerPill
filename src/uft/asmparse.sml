@@ -145,13 +145,11 @@ struct
  eR3 "+" : 'a -> 'c -> 'd -> instr
  eR3 "+" <$> : ('c -> 'd -> instr) producer 
  ('d -> instr) producer
-
  eR1 "print": 'a -> instruction 
  
 eR1 "print" <$> reg : instruction producer *)
 
 (* 'a -> 'b -> instr
-
 'b -> instr producer *)
 
   (* parser to read an instruction /without/ reading end of line *)

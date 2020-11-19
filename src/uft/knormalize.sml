@@ -57,6 +57,10 @@ struct
     = nbRegsWith
 
   fun smallest (RS n) = n
+  fun map' f' [] k = k []
+
+    | map' f' (x :: xs) k =
+        f' x (fn y => map' f' xs (fn ys => k (y :: ys)))
 
   type policy = regset -> exp -> (reg -> exp) -> exp
 
@@ -67,6 +71,8 @@ struct
 
   fun bindSmallest A e k = K.LET (smallest A, e, k (smallest A))
 
+  fun snd (_, c) = c
+
   fun funcode (formals, x) env =
       let 
         val (env', reg_set') = List.foldl (fn (x, (bindings, A)) => (Env.bind (x, smallest A, bindings), A -- (smallest A)) ) env formals
@@ -76,7 +82,7 @@ struct
         (consec_regs, exp env' reg_set' x)
       end
 
-  
+    
 
   and exp rho A e =
     let val exp : reg Env.env -> regset -> ClosedScheme.exp -> exp = exp
@@ -119,19 +125,20 @@ struct
         | F.CLOSURE ((formals, e), captured) => nbRegs bindAnyReg A captured
                                                 (fn rs =>  K.CLOSURE (funcode (formals, e) (rho, RS 0), rs))
         | F.LETREC (bindings, body) => 
-          let 
-            fun fr len r = List.tabulate (len, (fn i => i + r))
-            val (names, closures) = ListPair.unzip bindings
-            val ts = fr (List.length bindings) (smallest A)
-            val A' = removeRegisters A ts
-            val rho' = ListPair.foldrEq (fn (n,r, rho) => Env.bind (n,r, rho)) rho (names, ts)
-            fun closure (fc, captured) k = 
-                  nbRegsWith (exp rho') bindAnyReg A' captured
-                  (fn rs => k (funcode fc, rs))
-          in
-            map' (closure o snd) bindings (fn cs =>  K.LETREC (ListPair.zip (ts, cs), exp rho' A' body))
-          end
-        fun closure ((formals, e), captured) k = nbRegsWith (exp rho') bindSmallest A' captured (fn rl => k K.CLOSURE ((formals, e), rl))
+              let 
+                fun fr len = List.tabulate (len, (fn i => i + (smallest A)))
+                val (names, closures) = ListPair.unzip bindings
+                val ts = fr (List.length bindings)
+                val A' = removeRegisters A ts
+                val rho' = ListPair.foldrEq (fn (n,r, rho) => Env.bind (n,r, rho)) rho (names, ts)
+                fun closure (lam, captured) k = 
+                      nbRegsWith (exp rho') bindAnyReg A' captured
+                      (fn rs => k (funcode lam (rho', A'), rs))
+                val cont = (fn cs => 
+                      K.LETREC (ListPair.zipEq (ts, cs), exp rho' A' body))
+              in
+                map' closure closures cont 
+              end
         | F.CAPTURED i => K.CAPTURED i
 
     end

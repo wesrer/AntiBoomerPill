@@ -16,6 +16,7 @@ MAINS += svm svm-loader-instructions
 
 MAINS += svm-dis
 
+UNITS += gcdebug vstack
 
 OBJ := $(UNITS:%=$(BUILD)/%.o)
 MOBJ := $(MAINS:%=$(BUILD)/%.o)
