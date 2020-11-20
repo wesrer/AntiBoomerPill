@@ -588,8 +588,8 @@ static void scan_value(Value v) {
 }
 
 static void scan_activation(struct Activation *p) {
-  assert(p);
-  assert(0 && "you have to implement this one");
+  p->fun = forward_function(p->fun, NULL);
+  return;
 }
 
 static void scan_vmstate(struct VMState *vm) {

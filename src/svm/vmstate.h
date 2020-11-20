@@ -15,13 +15,13 @@
 
 typedef struct VMState {
     //Intstruction Pointer
-  	int ip;
+    int ip;
 
     // //Instructions
 	  // Instruction* instructions;
 
     // //Registers
-	  Value* registers;
+    Value* registers;
 
     // //Literal Pool
     Value* literal_pool;
