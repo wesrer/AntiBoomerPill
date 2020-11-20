@@ -1,0 +1,50 @@
+3.  Number - yes
+Atom - no
+Function - yes
+Pid - no
+Tuple - no
+Map - no
+List - no
+String- yes
+Record - no
+Boolean - yes
+
+The list type, for example, cannot be expressed as a <literal>
+type in virtual object code. It would have to be built up at 
+runtime using machine code instructions with an opocde like ++
+to allocate space for an element and attaching it at the beginning.
+
+4. I think the code could be reused to read virtual object code
+for erlang. There would have to be some modifications in the loader
+to adjust for the syntax of erlang, such as including
+a module. There would have to be lots of 
+modifications to account for the imperative features of erlang such as 
+loop, etc. But the general structure of parsing tokens and having each
+opcode in the instructions table could be reused.
+
+5. My implementation compromises wasting space in the literal pool.
+It is implemented with an array, so the same value could be added
+over and over. Adding to the pool does take constant time. I think 
+that we could achieve both of those things by using a hashmap, but that
+may compromise that implementing the literal pool is quick and easy.
+
+6. in iparsers.c, in function get_literal, lines 119-128,
+the parses chooses which literal form it sees.
+
+7. Virtual machine code must satisfy the invariant that values
+can be referred to directly, they must be referred to by the register
+number they are located in.
+
+8. I think all of the forms can be embedded into a VM Value without state.
+None of the embedding creator functions require the VM state to embedded
+a literal into a value.
+
+9. print, check and expect could. Instructions that do not have to 
+access the state to write back into registers or set a global could
+be projected into one of the 3 <instruction> types.
+
+10. The index of the Value v in k is not specified, 
+as literal slot does not take in the slot number in line 39
+of vmstate.c.
+L is a subset of L' since none of the other literal 
+values are removed or modified, on line 45 of vmrun.c.

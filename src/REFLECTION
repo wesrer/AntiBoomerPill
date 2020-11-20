@@ -1,0 +1,33 @@
+NOTE: WE RESUBMITTED CODE BECAUSE WE FIXED THINGS/ 
+REFORMATTED CODE AND LINE NUMBERS ARE DIFFERENT
+
+1. 
+(val y 5)
+(lambda (z) (lambda (x)  (- z (+ x y))))
+
+captured: z
+primitive: +
+global name: y
+local: x
+
+2.  Line 45-58 of closure-convert.sml, since calling free on the body
+removes global variables by returning an empty list of free variables for a 
+global var. Because of this, the captured variables in the closure do not have the
+global variables.
+
+3. lines 47-53 of embedkn.sml
+
+4. Lines 300-305 (getclslot) of vmrun.c
+
+5. lines 124, 125 of knormalize.sml. We use the nbRegs function with a continuation
+that uses the list of registers allocated inside the captured variables of the 
+closure. 
+
+6. We did have a bug in which we were not correctly identifying
+the free variables in the lambda and line 110 of our code created a failure since
+the captured variable was not bound the environment and therefore could not be looked up.
+
+7. On line 73 of closure-convert.sml, there is a guard clause in case the user
+tries to mutate a captured variable.
+
+8. lines 127-145 of knormalize.sml

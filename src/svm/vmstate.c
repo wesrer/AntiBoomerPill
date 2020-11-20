@@ -15,12 +15,21 @@
 #include "vtable.h"
 #include "value.h"
 
+// constants
+
+#define CALLSTACK_SIZE 50000
+#define REGISTER_SIZE 5000
+#define LITERAL_SIZE 5000
+#define GLOBALS_SIZE 5000
+
+
 void freestatep(VMState *sp) {
     assert(sp && *sp);
     VMState vm = *sp;
     // free(vm->instructions);
     free(vm->registers);
     free(vm->literal_pool);
+    free(vm->callstack);
     free(vm);
 }
 
@@ -30,12 +39,13 @@ VMState newstate(void) {
     state->ip = 0;
     state->num_literals = 0;
     // state->instructions = NULL;
-    state->registers= calloc(5000, sizeof(Value));
-    state->callstack_length = 500;
+    state->registers= calloc(REGISTER_SIZE, sizeof(Value));
+    state->callstack_length = CALLSTACK_SIZE;
     state->callstack_size = 0;
-    state->callstack = malloc(500 * sizeof(struct Activation));
-    state->literal_pool = malloc(500 * sizeof(Value));
-    state->globals =  VTable_new(500);
+    state->callstack = malloc(CALLSTACK_SIZE * sizeof(struct Activation));
+    state->literal_pool = malloc(LITERAL_SIZE * sizeof(Value));
+    state->globals =  VTable_new(GLOBALS_SIZE);
+    // state->highest_reg = 0;
     state->window = 0;
     return state;
 }
@@ -46,6 +56,7 @@ int literal_slot(VMState state, Value literal) {
     // and returning 0.  For module 2, you'll need something slightly
     // more sophisticated.
     int counter = state->num_literals;
+    // printf("literal counter is %d\n", counter);
     (state->literal_pool)[counter] = literal;
     (state->num_literals)++;
     return counter;

@@ -20,13 +20,17 @@ typedef struct VMState {
     // //Instructions
 	  // Instruction* instructions;
 
+    // struct VMFunction* instructions;
+
     // //Registers
     Value* registers;
+
+    // int highest_reg;
 
     // //Literal Pool
     Value* literal_pool;
 
-    struct VMFunction *fun;
+    struct VMFunction *current_fun;
 
     struct Activation* callstack;
 

@@ -1,0 +1,45 @@
+1. 
+(f >=> g) a =  g b when f a = succeed b
+(f >=> g) a =  E of str when f a = ERROR of str
+
+2.
+val commaSep : 'a producer -> 'a list producer
+  (* `commaSep p` returns a parser that parses a sequence
+      of zero or more p's separated by commas *)
+
+commaSep p =   the "," <$> p <*> many p
+
+3.
+VIRTUAL OBJ CODE:   ASSEMBLY:
+
++ r1 r2 r3       |    r1 := r2 + r3
+
+This is more readable because it is clear which register the result
+is being put into, and what the operands are.
+
+loadliteral r1 LIT  |   $<reg> := <lit>
+
+This is more readable because it is clear
+that the value in the register is being set to 
+the literal value
+
+4. The unparse functions show that these are
+concerns because 
+Our assembly code is simple to read and write, but it 
+does result in extensive case analysis in the unparse functions.
+However, with good pattern matching, it is possible to keep
+the code short. In unparse1, we could have done the pattern matching
+with the A.OBJECT_CODE on the left on the right hand side tp
+eliminate complicated and redundant code.
+
+6. The arithmetic rules require looking more than one token ahead
+to determine what syntactic form to use. For example:
+ $<reg> := $<reg> + $<reg>
+ vs. $<reg> := $<reg> - $<reg> requires seeing the operator token.
+
+ 8. when taking a line of source code and parsing it, and then
+creating an instruction. This is implemented with the parsing 
+functions on line 110 of asmparse.sml. Projection failure is dealt with the
+error monad in the parsing combinator. Embedding is done in the unparsing function,
+when we embed object code into in a concrete assembly string, on line 
+line 172 of asmparse.sml.

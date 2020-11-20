@@ -95,7 +95,7 @@ struct
   val bool       = P.maybe (fn (L.NAME "true")    => SOME true
                                | (L.NAME "false") => SOME false
                                | _ => NONE) one
-  val emptylist       = P.maybe (fn (L.NAME "'()") => SOME O.EMPTYLIST
+  val emptylist       = P.maybe (fn (L.STRING "'()") => SOME O.EMPTYLIST
                                | _ => NONE) one
 
   val nil'       = P.maybe (fn (L.NAME "nil") => SOME O.NIL
@@ -123,8 +123,11 @@ struct
 
   (***** instruction-building functions for parsers ****)
 
+  
+
   fun regs operator operands = A.OBJECT_CODE (O.REGS (operator, operands))
   fun regs_lit operator operands lit = A.OBJECT_CODE (O.REGSLIT (operator, operands, lit))
+  fun regs_int operator r1 r2 index = A.OBJECT_CODE (O.REGINT (operator, r1, r2, index))
   fun def_label lab = A.DEFLABEL lab
   fun goto_label lab = A.GOTO_LABEL lab
   fun if_goto_label r1 lab = A.IF_GOTO_LABEL (r1, lab)
@@ -136,6 +139,7 @@ struct
   fun eR1 operator r1       = regs operator [r1]
   fun eR2 operator r1 r2    = regs operator [r1, r2]
   fun eR3 operator r1 r2 r3 = regs operator [r1, r2, r3]
+  fun eR2U8 operator r1 r2 index = regs_int operator r1 r2 index
   fun eR1U16 operator r1 lit = regs_lit operator [r1] lit
   fun eR1U16_switch operator lit r1 = regs_lit operator [r1] lit
 
@@ -168,7 +172,7 @@ eR1 "print" <$> reg : instruction producer *)
 
    <|> the "print" >> eR1 "print" <$> reg
 
-   <|> the "!" >> eR1 "!" <$> reg
+   <|> the "not" >> eR1 "not" <$> reg
    <|> the "zero" >> eR1 "zero" <$> reg
    <|> the "makeconscell" >> eR1 "makeconscell" <$> reg
    <|> the "projectbool" >> eR1 "projectbool" <$> reg
@@ -200,9 +204,9 @@ eR1 "print" <$> reg : instruction producer *)
    <|> eR3 "<" <$> reg <~> the ":=" <*> reg <~> the "<" <*> reg
    <|> eR3 "idiv" <$> reg <~> the ":=" <*> reg <~> the "idiv" <*> reg
 
-   <|> eR3 "mkclosure" <$> reg <~> the ":=" <~> the "closure" <~> the "[" <*> reg <~> the "," <*> reg <~> the "]"
-   <|> eR3 "getclslot" <$> reg <~> the ":=" <*> reg <~> the "." <*> reg
-   <|> eR3 "getclslot" <$> reg <~> the "." <*> reg <~> the ":=" <*> reg
+   <|> eR3 "mkclosure" <$> reg <~> the ":=" <~> the "closure" <~> the "[" <*> reg <~> the "," <*> int <~> the "]"
+   <|> eR3 "getclslot" <$> reg <~> the ":=" <*> reg <~> the "." <*> int
+   <|> eR3 "setclslot" <$> reg <~> the "." <*> int <~> the ":=" <*> reg
 
    <|> the "error" >> eR1 "error" <$> reg
    <|> the "printu" >> eR1 "printu" <$> reg
@@ -290,8 +294,8 @@ val parse =
             spaceSep ["return", reg x]
     | unparse1 (A.OBJECT_CODE (O.REGS ("halt", []))) = 
             "halt"
-    | unparse1 (A.OBJECT_CODE (O.REGS ("!", [x]))) = 
-            spaceSep ["!", reg x]
+    | unparse1 (A.OBJECT_CODE (O.REGS ("not", [x]))) = 
+            spaceSep ["not", reg x]
     | unparse1 (A.OBJECT_CODE (O.REGS ("zero", [x]))) = 
             spaceSep ["zero", reg x]
     | unparse1 (A.OBJECT_CODE (O.REGS ("makeconscell", [x]))) = 

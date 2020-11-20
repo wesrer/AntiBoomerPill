@@ -25,7 +25,7 @@ instruction_info instructions[] = {
   { "-", Subtract, parseR3, "$rX := $rY - $rZ" },
   { "/", Divide, parseR3, "$rX := $rY / $rZ" },
   { "*", Multiply, parseR3, "$rX := $rY * $rZ" },
-  { "!", Not, parseR1, "! $rX"},
+  { "not", Not, parseR1, "not $rX"},
   { "zero", Zero, parseR1, "zero $rX"},
   { "setglobal", SetGlobal, parseR1LIT, "globals[LIT] := $rX" },
   { "getglobal", GetGlobal, parseR1LIT, "getglobal $rX LIT" },
@@ -52,10 +52,9 @@ instruction_info instructions[] = {
   { "<", LessThan, parseR3, "$rX := $rY < $rZ" },
   { "idiv", IDiv, parseR3, "$rX := $rY idiv $rZ" },
 
-  {"mkclosure", MkClosure, parseR3, "rX := closure[rY,Z]"},
-  {"getclslot", GetClSlot, parseR3, "rX := rY.Z"},
-
-  {"setclslot", SetClSlot, parseR3, "rX.Z := rY"},
+  {"mkclosure", MkClosure, parseR2U8, "$rX := closure[$rY,Z]"},
+  {"getclslot", GetClSlot, parseR2U8, "$rX := $rY.Z"},
+  {"setclslot", SetClSlot, parseR2U8, "$rX.Z := $rY"},
 
   {"return", Return, parseR1, "return rX"},
 

@@ -36,6 +36,7 @@ void vmrun(VMState vm, struct VMFunction *fun) {
   const char *dump_decode = svmdebug_value("decode");
   const char *dump_call   = svmdebug_value("call");
   (void) dump_call;  // make it OK not to use `dump_call`
+  fun = fun;
 
   while (true) {
     Value* regs = vm->registers + vm->window;
@@ -43,6 +44,7 @@ void vmrun(VMState vm, struct VMFunction *fun) {
     Value RX = regs[uX(i)];
     Value RY = regs[uY(i)];
     Value RZ = regs[uZ(i)];
+    // vm->highest_reg = fun->nregs + vm->window > vm->highest_reg ? uX(i) vm->window : vm->highest_reg;
     if (dump_decode)
       idump(stderr, vm, cip, i, vm->window, &RX, &RY, &RZ);
 
@@ -91,6 +93,7 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       case LoadLiteral:
       {
         Value v = vm->literal_pool[uYZ(i)];
+        // print("in loadlit: %v\n", v);
         regs[uX(i)] = v;
         break;
       }
@@ -151,7 +154,7 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       }
       case MakeConsCell: 
       { 
-        struct VMBlock* bl = malloc(sizeof(*bl) + sizeof(bl->slots[0]));
+        VMNEW(struct VMBlock *, bl, sizeof(*bl) + sizeof(bl->slots[0]));
         bl->nslots = 1;
         bl->slots[0] = regs[uX(i)];
         regs[uX(i)] = mkConsValue(bl);
@@ -173,11 +176,7 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         a.start_window = funreg;
         a.end_window = lastarg;
         a.dest_reg = destreg;
-        Value callee = regs[funreg];
-        if (callee.tag == VMFunction)
-          a.fun = callee.f;
-        else if (callee.tag == VMClosure)
-          a.fun = callee.hof->f;
+        a.fun = fun;
         a.pc = cip;
         if (vm->callstack_size >= vm->callstack_length) {
           runerror(vm, "Stack overflow!");
@@ -186,9 +185,13 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         int n = lastarg - funreg;
         vm->callstack_size++; 
         vm->window += funreg;
+        Value callee = regs[funreg];
+        if (callee.tag == VMFunction)
+         fun = callee.f;
+        else if (callee.tag == VMClosure)
+         fun = callee.hof->f;
         // fun = AS_VMFUNCTION(vm, regs[funreg]);
-
-
+      
         if (n > fun->arity) 
           runerror(vm, "Function arity and arguments mismatched ");
         if (fun->nregs >= 255)
@@ -196,14 +199,59 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         cip = 0;
         continue;
       }
+      //TODO: check if there are right number of arguments
+      // case Call:
+      // {
+      //   int lastarg = uZ(i);
+      //   int funreg = uY(i);
+      //   int destreg = uX(i);
+      //   struct Activation a;
+
+      //   a.start_window = funreg;
+      //   a.end_window = lastarg;
+      //   a.dest_reg = destreg;
+
+      //   Value callee = regs[funreg];
+      //   if (callee.tag == VMFunction)
+      //    a.fun = callee.f;
+      //   else if (callee.tag == VMClosure)
+      //    a.fun = callee.hof->f;
+
+      //   a.pc = cip;
+      //   // fun = a.fun;
+
+      //   if (vm->callstack_size >= vm->callstack_length) {
+      //     runerror(vm, "Stack overflow!");
+      //   }
+
+      //   vm->callstack[vm->callstack_size] = a;
+      //   int n = lastarg - funreg;
+      //   vm->callstack_size++; 
+      //   vm->window += funreg;
+      //   // fun = AS_VMFUNCTION(vm, regs[funreg]);
+      //   fun = a.fun;
+
+      //   print("num of function args: %d\n", n);
+      //   print("num of arguments: %d\n", fun->arity);
+
+      //   if (n > fun->arity) 
+      //     runerror(vm, "Function arity and arguments mismatched ");
+      //   if (fun->nregs >= 255)
+      //     runerror(vm, "Register file overflowed");
+      //   cip = 0;
+      //   continue;
+      // }
       case Return:
       {
+        // printf("previous fun pointer: %p\n", (void *) fun);
         struct Activation a = vm->callstack[vm->callstack_size - 1];
         regs[a.dest_reg - a.start_window] = regs[uX(i)];
         vm->callstack_size--;
         cip = a.pc + 1;
         vm->window -= a.start_window;
         fun = a.fun;
+        // printf("reset fun pointer: %p\n", (void *) fun);
+        // print("in return\n");
         continue;
       }
       case Mov: 
@@ -244,13 +292,16 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       }
       case Nil_Observer:
       {
+        // print("in nil observer\n");
         regs[uX(i)] = mkBooleanValue(eqvalue(regs[uY(i)], nilValue));
         break;
 
       }
       case Null_Observer:
       {
+        // print("in null observer\n");
         regs[uX(i)] = mkBooleanValue(eqvalue(regs[uY(i)], emptylistValue));
+        // print("%v", mkBooleanValue(eqvalue(regs[uY(i)], emptylistValue)));
         break;
       }
       case CheckAssert:
@@ -261,16 +312,16 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       }
       case Car:
       {
-        struct VMBlock* bl = AS_BLOCK(vm, regs[uY(i)]);
-        if (bl->nslots < 1) 
+        Value v = regs[uY(i)];
+        if (eqvalue(emptylistValue, v)) 
           runerror(vm, "car of empty list");
+        struct VMBlock* bl = AS_BLOCK(vm, regs[uY(i)]);
+
         regs[uX(i)] = bl->slots[0];
         break;
       }
       case Cdr:
       {
-        struct VMBlock* new_list;
-
         if (eqvalue(regs[uY(i)], emptylistValue)) {
            regs[uX(i)] = emptylistValue;
         }
@@ -279,7 +330,7 @@ void vmrun(VMState vm, struct VMFunction *fun) {
           if (bl->nslots == 1)
             regs[uX(i)] = emptylistValue;
           else {
-            new_list = malloc(sizeof(*new_list) + (new_list->nslots - 1) * sizeof(new_list->slots[0]));
+          VMNEW(struct VMBlock*, new_list, sizeof(*new_list) + (new_list->nslots - 1) * sizeof(new_list->slots[0]));
           new_list->nslots = bl->nslots - 1;
           memcpy(new_list->slots, bl->slots + 1, bl->nslots * sizeof(bl->slots[0]));
           regs[uX(i)] = emptylistValue;
@@ -289,9 +340,9 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       }
       case MkClosure:
       {
-        Number_T nslots = AS_NUMBER(vm, regs[uZ(i)]);
-        struct VMClosure* closure = malloc(sizeof(*closure) + nslots * sizeof(closure->captured[0]));
-        closure->nslots = nslots;
+        // Number_T nslots = AS_NUMBER(vm, uZ(i));
+        VMNEW(struct VMClosure*, closure, sizeof(*closure) + uZ(i) * sizeof(closure->captured[0]));
+        closure->nslots = uZ(i);
         closure->f = AS_VMFUNCTION(vm, regs[uY(i)]);
         regs[uX(i)] = mkClosureValue(closure);
         break;
@@ -299,15 +350,15 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       case GetClSlot:
       {
         struct VMClosure* closure = AS_CLOSURE(vm, regs[uY(i)]);
-        Number_T slot = AS_NUMBER(vm, regs[uZ(i)]);
-        regs[uX(i)] = closure->captured[(int) slot];
+        // Number_T slot = AS_NUMBER(vm, uZ(i));
+        regs[uX(i)] = closure->captured[uZ(i)];
         break;
       }
       case SetClSlot:
       {
         struct VMClosure* closure = AS_CLOSURE(vm, regs[uX(i)]);
-        Number_T slot = AS_NUMBER(vm, regs[uZ(i)]);
-        closure->captured[(int) slot] =  regs[uY(i)];
+        // Number_T slot = AS_NUMBER(vm, uZ(i));
+        closure->captured[uZ(i)] =  regs[uY(i)];
         break;
       }
       case Error:
@@ -317,21 +368,22 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       }
       case Cons:
       {
-        struct VMBlock* new_list;
         Value cons_val = regs[uY(i)];
-
         if (eqvalue(regs[uZ(i)], emptylistValue)) {
-          new_list = malloc(sizeof(*new_list) + sizeof(new_list->slots[0]));
+          VMNEW(struct VMBlock*, new_list, sizeof(*new_list) + sizeof(new_list->slots[0]));
           new_list->nslots = 1;
+         new_list->slots[0] = cons_val;
+          regs[uX(i)] = mkBlockValue(new_list);
         }
         else {
           struct VMBlock* bl = AS_BLOCK(vm, regs[uZ(i)]);
-          new_list = malloc(sizeof(*new_list) + (bl->nslots + 1) * sizeof(new_list->slots[0]));
+          VMNEW(struct VMBlock*, new_list, sizeof(*new_list) + (bl->nslots + 1) * sizeof(new_list->slots[0]));
           new_list->nslots = bl->nslots + 1;
           memcpy(new_list->slots + 1, bl->slots, bl->nslots * sizeof(bl->slots[0]));
-        }
-        new_list->slots[0] = cons_val;
+          new_list->slots[0] = cons_val;
         regs[uX(i)] = mkBlockValue(new_list);
+        }
+
         break;
       }
       case Halt:

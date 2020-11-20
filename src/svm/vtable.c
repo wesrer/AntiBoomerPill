@@ -106,6 +106,7 @@ void VTable_put(T table, Value key, Value value) {
             if (identical(key, p->key))
               break;
           if (p == NULL) {
+            // VMNEW(struct binding *, p, (sizeof(*p)));
             p = vmalloc_raw(sizeof(*p));
             p->key = key;
             p->link = table->buckets[i];

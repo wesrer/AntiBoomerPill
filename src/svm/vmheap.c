@@ -43,7 +43,7 @@
 /********************************* HEAP PAGES ********************************/
 
 #ifdef SMALLHEAP
-  #define PAGESIZE 600   // bytes in one page, just big enough for globals table
+  #define PAGESIZE 35000   // bytes in one page, just big enough for globals table
 #else
   #define PAGESIZE (32*1024)   // bytes in one page
 #endif
@@ -588,38 +588,56 @@ static void scan_value(Value v) {
 }
 
 static void scan_activation(struct Activation *p) {
-  assert(p);
-  assert(0 && "you have to implement this one");
+  p->fun = forward_function(p->fun, NULL);
+  return;
 }
 
 static void scan_vmstate(struct VMState *vm) {
-  assert(vm);
-  assert(0 && "you have to implement this one");
-  // see book chapter page 265 about roots
+    // see book chapter page 265 about roots
+    // roots: all registers that can affect future computation
+    //    (these hold local variables and formal paramters as on page 265)
+    //    (hint: don't scan high-numbered registers that can't
+    //     affect future computations because they aren't used)
+    int highest_reg = vm->current_fun->nregs + vm->window;
 
-  // roots: all registers that can affect future computation
-  //    (these hold local variables and formal paramters as on page 265)
-  //    (hint: don't scan high-numbered registers that can't
-  //     affect future computations because they aren't used)
-
-  // roots: all literal slots that are in use
-
-  // roots: each function on the call stack
-  (void) scan_activation; // likely to be useful here
-
-  // root: the currently running function (which might not be on the call stack)
-
-  // root: the global-variable table
-  //    (hint: copy the table to to-space,
-  //     then scan it with `mkTableValue` and `scan_value`)
-
-  // root: any other field of `struct VMState` that could lead to a `Value`
+    for(int i = 0; i < highest_reg; i++)
+    {
+      forward_payload(&vm->registers[i]);
+    }
+    // roots: all literal slots that are in use
+    for(int i = 0; i < vm->num_literals; i++)
+    {
+      forward_payload(&vm->literal_pool[i]);
+    }
+    // roots: each function on the call stack
+  for (int i = 5000; i > vm->callstack_size; i--)
+    {
+      scan_activation(&vm->callstack[i]);
+    }
+    // root: the currently running function (which might not be on the call stack)
+    vm->current_fun = forward_function(vm->current_fun, NULL);
+    // root: the global-variable table
+    //    (hint: copy the table to to-space,
+    //     then scan it with `mkTableValue` and `scan_value`)
+    vm->globals = forward_table(vm->globals, NULL);
+    // root: any other field of `struct VMState` that could lead to a `Value`
+    return;
 
 }
+
+  // Copy all live objects to to-space,
+  // then move the old from-space pages to `available`.
+  // Also increment `total.collections` and clear flag `gc_needed`.
 
 extern void gc(struct VMState *vm) {
   assert(vm);
   assert(0 && "gc left as exercise");
+
+  // count.current 
+
+  while(current->link != NULL) {
+    printf("help");
+  }
 
   /* Narrative sketch of the algorithm (see page 266):
 

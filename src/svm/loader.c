@@ -61,13 +61,13 @@ static struct VMFunction *loadfun(VMState vm, int arity, int count, FILE *input)
 
 
 static struct VMFunction *loadfun(VMState vm, int arity, int count, FILE *input) {
-  unsigned* maxregp = malloc(sizeof(*maxregp));
-  *maxregp = 0;
+  // VMNEW(unsigned*, maxregp, sizeof(*maxregp));
+  unsigned maxregp = 0;
 
   char *buffer = NULL;
   size_t bufsize = 0;
 
-  struct VMFunction *fun = malloc(sizeof (*fun) + (count + 1) * sizeof(fun->instructions[0]));
+  VMNEW(struct VMFunction *, fun, sizeof (*fun) + (count + 1) * sizeof(fun->instructions[0]));
   fun->arity = arity;
   fun->size = count + 1;
 
@@ -92,13 +92,15 @@ static struct VMFunction *loadfun(VMState vm, int arity, int count, FILE *input)
       fun->instructions[i] = eR1U16(LoadLiteral, (unsigned) reg, (unsigned) slot);
     }
     else {
-      fun->instructions[i] = parse_instruction(vm, n, tokens_left, maxregp);
+      fun->instructions[i] = parse_instruction(vm, n, tokens_left, &maxregp);
     }
-    free(alltokens);
+    free_tokens(&alltokens);
   };
+  free(buffer); // done with the input line and its tokens
+
   fun->instructions[count]= eR0(Halt);
-  fun->nregs = *maxregp;
-  free(maxregp);
+  fun->nregs = maxregp;
+  // free(maxregp);
   // freeline
   return fun;
 }

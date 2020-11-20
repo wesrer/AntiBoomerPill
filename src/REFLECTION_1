@@ -1,0 +1,83 @@
+2. 
+    embedding:
+        check, expect
+
+    projecting:
+        
+    neither:
+        print
+        halt,
+        movL
+
+    both:
+        not
+        add
+
+3. line 35, vmrun.c: opcode()
+    line 38, vmrun.c: uX()
+    line 3, vmrun.c: switch statement on opcode(i) 
+    determines if a 32 bit word can be projected into a machine instruction with 
+    an opcode defined in the VM.
+    We use the opcode function on line 35 to project those 8 bits into an opcode.
+    If this can't be done, we throw a typeerror
+    In the arms of the case statement, we project the remaining 24 bits 
+    based on the instruction formatinto register values, offset values, or literal indexes.
+
+4. instruction stream: Array of type Instruction*, Dynamically allocated in newstate
+
+   instruction pointer: integer, refers to an index in the instruction stream
+
+   (For this module, we are not using the instruction stream, we are directly
+   using the instructions from the function.)
+   
+    a register file: A dynamically allocated array of Values
+
+    a literal pool:  A dynamically allocated array of Values
+     
+    lobal-variable table: VTable_T for fast retrieval of values.
+
+5. 
+
+ copy a value from one VM register to another.
+
+δ(copy(X, Y), R, L, σ) = σ{R(X) ↦ σ(R(Y))}
+
+i ∈ dom δ
+------------
+⟨I1 • i ⋅ I2, R, L, G, σ⟩ → ⟨I1 ⋅ i • I2, R, L, G, δ(i, R, L, σ)⟩
+
+6. We are storing the instruction pointer locally (int cip), the instruction that 
+the pointer is pointing to (Instruction i).
+We chose to cache the instruction pointer because it is used on every instruction read. 
+We stored the instruction because we use many different decoding functions to extract
+values from those instructions.
+In the future, we will cache the values of the first 3 registers and write them back when
+we halt since those are the most frequently accessed registers.
+
+7. JavaScript
+   Useful:
+        Nil
+        Boolean, 
+        Number,
+        String,
+        VMFunction, // first-order function (sequence of instructions)
+        VMClosure,  // higher-order function
+        Seq,        // variable-size sequence in the style of Hanson/Icon/CLU
+        Table,      // hash table
+        Block,      // block of values of fixed size: record, etc
+
+    Not Useful:
+        Emptylist,
+        ConsCell,   // represented as Block (for now)
+        CFunction, 
+        LightUserdata,   // pointer to data on the C heap
+
+   VMClosure would be useful because JavaScript has higher-order functions.
+   An Emptylist would not be useful because a list is not a built-in 
+   datatype in JavaScript.
+
+8. value.h, value.c
+The Value type would be helpful to implement Icon, Erlang and Lua
+For example, I could use the Seq tag in this module to help implement 
+the variable-size sequence in Icon. I could also use the EmptyList/ConsCell
+to help implement Erlang.

@@ -1,0 +1,8 @@
+$r0 := function 1 {$r3 := null? $r1
+return $r3
+}
+globals["help"] := $r0
+$r0:=globals["help"]
+$r1:=emptylist
+$r0 := call $r0 ( $r1, ..., $r1 )
+print $r0
