@@ -65,4 +65,8 @@ instruction_info instructions[] = {
 
 };
 
+int isgetglobal(Opcode code) {
+  return code == GetGlobal; // change this for your SVM
+}
+
 int number_of_instructions = sizeof(instructions) / sizeof(instructions[0]);
