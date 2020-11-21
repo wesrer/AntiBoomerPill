@@ -633,11 +633,32 @@ extern void gc(struct VMState *vm) {
   assert(vm);
   assert(0 && "gc left as exercise");
 
-  // count.current 
+  // Page fromspace = current;
 
-  while(current->link != NULL) {
-    printf("help");
-  }
+  // take_available_page();
+
+  // gc_in_progress = true;
+
+  // scan_vmstate(vm);
+
+
+  // while (!VStack_isempty(gray)) {
+  //   Value v = VStack_pop(gray);
+  //   scan_value(v);
+  // }
+
+  // VMString_drop_dead_strings();
+
+  // make_available(fromspace);
+
+  // growheap(target_gamma(vm->globals), count.current.pages);
+
+  // total.collections += 1;
+
+  //   gc_in_progress = false;
+  //   gc_needed = false;
+
+
 
   /* Narrative sketch of the algorithm (see page 266):
 

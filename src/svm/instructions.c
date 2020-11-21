@@ -14,6 +14,7 @@
 instruction_info instructions[] = {
   { "if", If, parseR1, "if $rX" },
   { "halt", Halt, parseR0, "halt" },
+  { "gc", GC, parseR0, "gc" },
   { "print", Print, parseR1, "print $rX" },
   { "loadliteral", LoadLiteral, parseR1LIT, "$rX := LIT" },
   { "check", Check, parseR1LIT, "check LIT, $rX" },
@@ -61,6 +62,7 @@ instruction_info instructions[] = {
   { "error", Error, parseR1, "error $rX" },
   { "printu", Printu, parseR1, "printu $rX" },
   { "println", Println, parseR1, "println $rX" },
+
 
 };
 

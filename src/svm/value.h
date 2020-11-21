@@ -300,6 +300,10 @@ static inline bool isSymbol(Value v) {
   return true;
 }
 
+static inline bool isBoolean(Value v) {
+  return v.tag == Boolean;
+}
+
 static inline bool isNumber(Value v) {
   return v.tag == Number;
 }

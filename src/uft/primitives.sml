@@ -43,6 +43,8 @@ structure Primitive :> sig
   val check        : primitive   (* for converting check-expect to K-normal form *)
   val expect       : primitive   (* for converting check-expect to K-normal form *)
   val check_assert : primitive
+
+
 end
   =
 struct
@@ -121,7 +123,7 @@ struct
   val number_observer = SETS_REGISTER { name = "number?",  arity = 1 }
   val mov = SETS_REGISTER { name = "mov",  arity = 2 }
   val hash = SETS_REGISTER { name = "hash",  arity = 2 }
-
+  val gc = HAS_EFFECT { name = "gc",  arity = 0 }
 end
 
 

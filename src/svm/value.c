@@ -8,6 +8,8 @@
 
 #include "value.h"
 #include "vmstring.h"
+#include "print.h"
+
 
 Value nilValue;
 

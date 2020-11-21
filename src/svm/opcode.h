@@ -51,7 +51,8 @@ typedef enum opcode {
                       Printu,
                       Println,
                       Call,
-                      Return
+                      Return,
+                      GC,
 } Opcode;
 
 int isgetglobal(Opcode code); // update this for your SVM, in instructions.c

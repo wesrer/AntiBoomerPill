@@ -21,6 +21,8 @@
 #include <stdlib.h>
 #include <inttypes.h>
 
+#include "vmsizes.h"
+
 #include "loader.h"
 #include "itable.h"
 #include "tokens.h"
@@ -66,8 +68,8 @@ static struct VMFunction *loadfun(VMState vm, int arity, int count, FILE *input)
 
   char *buffer = NULL;
   size_t bufsize = 0;
+  VMNEW(struct VMFunction *, fun, vmsize_fun(count + 1));
 
-  VMNEW(struct VMFunction *, fun, sizeof (*fun) + (count + 1) * sizeof(fun->instructions[0]));
   fun->arity = arity;
   fun->size = count + 1;
 
