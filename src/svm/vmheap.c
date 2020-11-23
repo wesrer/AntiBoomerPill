@@ -630,65 +630,53 @@ static void scan_vmstate(struct VMState *vm) {
   // Also increment `total.collections` and clear flag `gc_needed`.
 
 extern void gc(struct VMState *vm) {
-  assert(vm);
-  assert(0 && "gc left as exercise");
+  // Narrative sketch of the algorithm (see page 266):
 
-  // Page fromspace = current;
+  // 1. Capture the list of allocated pages from `current`,
+  //    and reset `current` include just one available page.
+  //    I recommend capturing the list of allocated pages
+  //    in a local variable called `fromspace`.
 
-  // take_available_page();
+  Page fromspace = current;
+  current = NULL;
+  take_available_page();
 
-  // gc_in_progress = true;
+  // 2. Set flag `gc_in_progress` (so statistics are tracked correctly).
+  gc_in_progress = true;
 
-  // scan_vmstate(vm);
+  // 3. Color all the roots gray using `scan_vmstate`.
+  scan_vmstate(vm);
 
+  // 4. While the gray stack is not empty, pop a value and scan it.
+  while (!VStack_isempty(gray)) {
+    Value v = VStack_pop(gray);
+    scan_value(v);
+  }
 
-  // while (!VStack_isempty(gray)) {
-  //   Value v = VStack_pop(gray);
-  //   scan_value(v);
-  // }
+  // 5. Call `VMString_drop_dead_strings()`.
+  VMString_drop_dead_strings();
 
-  // VMString_drop_dead_strings();
+  // 6. Take the pages captured in step 1 and make them available.
+  make_available(fromspace);
 
-  // make_available(fromspace);
+  // 7. Use `growheap` to acquire more available pages until the
+  //     ratio of heap size to live data meets what you get from
+  //     `target_gamma`.  (The amount of live data is the number of
+  //     pages copied to `current` in steps 3 and 4.)
+  double new_gamma = target_gamma(vm->globals);
+  growheap(new_gamma, count.current.pages);
+  
 
-  // growheap(target_gamma(vm->globals), count.current.pages);
+  // 8. Update counter `total.collections` and
+  //    flags `gc_needed` and `gc_in_progress`.
+  total.collections += 1;
 
-  // total.collections += 1;
+  gc_in_progress = false;
+  gc_needed = false;
 
-  //   gc_in_progress = false;
-  //   gc_needed = false;
+  // 9. If `svmdebug_value("gcstats")` is set and contains a + sign, 
+  //    print statistics as suggested by exercise 2 on page 299.
 
-
-
-  /* Narrative sketch of the algorithm (see page 266):
-
-      1. Capture the list of allocated pages from `current`,
-         and reset `current` include just one available page.
-         I recommend capturing the list of allocated pages
-         in a local variable called `fromspace`.
-
-      2. Set flag `gc_in_progress` (so statistics are tracked correctly).
-
-      3. Color all the roots gray using `scan_vmstate`.
-
-      4. While the gray stack is not empty, pop a value and scan it.
-
-      5. Call `VMString_drop_dead_strings()`.
-
-      6. Take the pages captured in step 1 and make them available.
-
-      7. Use `growheap` to acquire more available pages until the
-         ratio of heap size to live data meets what you get from
-         `target_gamma`.  (The amount of live data is the number of
-         pages copied to `current` in steps 3 and 4.)
-
-      8. Update counter `total.collections` and
-         flags `gc_needed` and `gc_in_progress`.
-
-      9. If `svmdebug_value("gcstats")` is set and contains a + sign, 
-         print statistics as suggested by exercise 2 on page 299.
-
-   */
 
   // functions that will be used:
   (void) scan_vmstate;   // in step 3

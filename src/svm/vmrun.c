@@ -163,6 +163,8 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       case MakeConsCell: 
       { 
         VMNEW(struct VMBlock *, bl, vmsize_block(1));
+        print("forwarded pointer:%p\n", bl->forwarded);
+        GCVALIDATE(bl->forwarded);
         bl->nslots = 1;
         bl->slots[0] = regs[uX(i)];
         regs[uX(i)] = mkConsValue(bl);
