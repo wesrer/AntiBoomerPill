@@ -26,7 +26,6 @@
 void freestatep(VMState *sp) {
     assert(sp && *sp);
     VMState vm = *sp;
-    // free(vm->instructions);
     free(vm->registers);
     free(vm->literal_pool);
     free(vm->callstack);

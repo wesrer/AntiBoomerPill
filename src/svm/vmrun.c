@@ -28,27 +28,9 @@
 #include "svmdebug.h"
 #include "disasm.h"
 
-// void (VMstate vm, ip, inst, registers){
-//   vm->ip = ip;
-//   regs[uX(inst)] = registers[0];
-//   regs[uY(inst)] = registers[1];
-//   regs[uZ(inst)] = registers[2];
-// }
-
 #define VMSAVE()  (vm->registers = regs, vm->current_fun = fun)
 #define VMLOAD()  (fun = vm->current_fun)
 #define GC() (VMSAVE(), gc(vm), VMLOAD())
-
-
-// void vmsave () {
-//   vm->registers = regs;
-//   vm->current_fun = current_fun;
-// }
-
-// void vmload (struct VMFunction *current_fun, Instruction* instrs) {
-//   fun = vm->current_fun;
-//   fun->instructions = instrs;
-// }
 
 
 void vmrun(VMState vm, struct VMFunction *fun) {
@@ -58,7 +40,6 @@ void vmrun(VMState vm, struct VMFunction *fun) {
   const char *dump_decode = svmdebug_value("decode");
   const char *dump_call   = svmdebug_value("call");
   (void) dump_call;  // make it OK not to use `dump_call`
-  // fun = fun;
 
   while (true) {
     Value* regs = vm->registers + vm->window;
@@ -66,33 +47,25 @@ void vmrun(VMState vm, struct VMFunction *fun) {
     Value RX = regs[uX(i)];
     Value RY = regs[uY(i)];
     Value RZ = regs[uZ(i)];
-    // vm->highest_reg = fun->nregs + vm->window > vm->highest_reg ? uX(i) vm->window : vm->highest_reg;
+    vm->current_fun = fun;
+
     if (dump_decode)
       idump(stderr, vm, cip, i, vm->window, &RX, &RY, &RZ);
 
     switch(opcode(i)) {
       case If:
       {
-        // printf("in if\n");
-        // printf("old cip is:%d\n", cip);
         bool b = AS_BOOLEAN(vm, regs[uX(i)]);
           if (!b)
-          {
             cip ++;
-          }
-         
-        // printf("new cip is:%d\n", cip);
-        continue;
-
+        break;
       }
       case GoTo:
       { 
-        // printf("in goto\n");
-        // int32_t jump = iXYZ(i);
-        // printf("jump is:%d\n", jump);
-        // if (jump < 0 || gc_needed)
-        //   GC();
-        cip += iXYZ(i);
+        int32_t jump = iXYZ(i);
+        if (jump < 0 && gc_needed)
+          GC();
+        cip += jump;
         continue;
       }
       case Print:
@@ -208,8 +181,8 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       //TODO: check if there are right number of arguments
       case Call:
       {
-        // if (gc_needed)
-        //   GC();
+        if (gc_needed)
+          GC();
         
         int lastarg = uZ(i);
         int funreg = uY(i);
@@ -342,20 +315,23 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       }
       case Cdr:
       {
-        if (eqvalue(regs[uY(i)], emptylistValue)) {
-           regs[uX(i)] = emptylistValue;
-        }
-        else {
-          struct VMBlock* bl = AS_CONS_CELL(vm, regs[uY(i)]);
-          if (bl->nslots == 1)
-            regs[uX(i)] = emptylistValue;
-          else {
-          VMNEW(struct VMBlock*, new_list, vmsize_block(bl->nslots - 1));
-          new_list->nslots = bl->nslots - 1;
-          memcpy(new_list->slots, bl->slots + 1, bl->nslots * sizeof(bl->slots[0]));
-          regs[uX(i)] = mkConsValue(new_list);
-          }
-        }
+        struct VMBlock* bl = AS_CONS_CELL(vm, regs[uY(i)]);
+        regs[uX(i)] = bl->slots[1];
+
+        // if (eqvalue(regs[uY(i)], emptylistValue)) {
+        //    regs[uX(i)] = emptylistValue;
+        // }
+        // else {
+        //   struct VMBlock* bl = AS_CONS_CELL(vm, regs[uY(i)]);
+        //   if (bl->nslots == 1)
+        //     regs[uX(i)] = emptylistValue;
+        //   else {
+        //   VMNEW(struct VMBlock*, new_list, vmsize_block(bl->nslots - 1));
+        //   new_list->nslots = bl->nslots - 1;
+        //   memcpy(new_list->slots, bl->slots + 1, bl->nslots * sizeof(bl->slots[0]));
+        //   regs[uX(i)] = mkConsValue(new_list);
+        //   }
+        // }
         break;
       }
       case MkClosure:
@@ -389,21 +365,11 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       case Cons:
       {
         Value cons_val = regs[uY(i)];
-        if (eqvalue(regs[uZ(i)], emptylistValue)) {
-          VMNEW(struct VMBlock*, new_list, vmsize_block(1));
-          new_list->nslots = 1;
-          new_list->slots[0] = cons_val;
-          regs[uX(i)] = mkConsValue(new_list);
-        }
-        else {
-          struct VMBlock* bl = AS_CONS_CELL(vm, regs[uZ(i)]);
-          VMNEW(struct VMBlock*, new_list, vmsize_block(bl->nslots + 1));
-          new_list->nslots = bl->nslots + 1;
-          memcpy(new_list->slots[1], bl->slots[1], bl->nslots * sizeof(bl->slots[1]));
-          new_list->slots[bl->nslots] = 
-          new_list->slots[0] = cons_val;
-          regs[uX(i)] = mkConsValue(new_list);
-        }
+        VMNEW(struct VMBlock*, new_list, vmsize_block(2));
+        new_list->nslots = 2;
+        new_list->slots[1] = regs[uZ(i)];
+        new_list->slots[0] = cons_val;
+        regs[uX(i)] = mkConsValue(new_list);
         break;
       }
       case Halt:
@@ -414,6 +380,8 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         break;
     }
     cip++;
+    // printf("cip in next iteration of while loop:%d\n", cip);
+
   }
 
   // Run code from `fun` until it executes a Halt instruction.

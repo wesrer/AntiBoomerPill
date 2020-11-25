@@ -1,1 +1,4 @@
-(check-expect (cons 1 '(2 3 4)) '(1 2 3 4))
+(while #t 1)
+(set x 8)
+(print (if #t 51 63))
+
