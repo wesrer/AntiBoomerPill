@@ -1,0 +1,10 @@
+
+../../bin/uft ho-vo ../../tests/solution.scm | valgrind --leak-check=full env SVMDEBUG=decode ../../bin/svm predef.vo -
+- mirror test is failing
+
+../../bin/uft ho-vs ../../tests/solution.scm 
+
+
+
+../../bin/uft ho-vo ../../tests/test.scm | valgrind --leak-check=full env SVMDEBUG=decode ../../bin/svm predef.vo
+-nothing

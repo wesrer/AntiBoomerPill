@@ -73,23 +73,23 @@ void vmrun(VMState vm, struct VMFunction *fun) {
     switch(opcode(i)) {
       case If:
       {
-        printf("in if\n");
-        printf("old cip is:%d\n", cip);
+        // printf("in if\n");
+        // printf("old cip is:%d\n", cip);
         bool b = AS_BOOLEAN(vm, regs[uX(i)]);
           if (!b)
           {
             cip ++;
           }
          
-        printf("new cip is:%d\n", cip);
+        // printf("new cip is:%d\n", cip);
         continue;
 
       }
       case GoTo:
       { 
-        printf("in goto\n");
-        int32_t jump = iXYZ(i);
-        printf("jump is:%d\n", jump);
+        // printf("in goto\n");
+        // int32_t jump = iXYZ(i);
+        // printf("jump is:%d\n", jump);
         // if (jump < 0 || gc_needed)
         //   GC();
         cip += iXYZ(i);
@@ -399,7 +399,8 @@ void vmrun(VMState vm, struct VMFunction *fun) {
           struct VMBlock* bl = AS_CONS_CELL(vm, regs[uZ(i)]);
           VMNEW(struct VMBlock*, new_list, vmsize_block(bl->nslots + 1));
           new_list->nslots = bl->nslots + 1;
-          memcpy(new_list->slots + 1, bl->slots, bl->nslots * sizeof(bl->slots[0]));
+          memcpy(new_list->slots[1], bl->slots[1], bl->nslots * sizeof(bl->slots[1]));
+          new_list->slots[bl->nslots] = 
           new_list->slots[0] = cons_val;
           regs[uX(i)] = mkConsValue(new_list);
         }
