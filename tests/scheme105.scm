@@ -1,19 +1,19 @@
 ;; Comp105 scheme assignment
 ;; You will be implementing these functions.
-(check-expect (procedure? count) #t)
-(check-expect (procedure? countall) #t)
-(check-expect (procedure? mirror) #t)
-(check-expect (procedure? flatten) #t)
-(check-expect (procedure? contig-sublist?) #t)
-(check-expect (procedure? sublist?) #t)
-(check-expect (procedure? takewhile) #t)
-(check-expect (procedure? dropwhile) #t)
-(check-expect (procedure? zip) #t)
-;;(check-expect (procedure? unzip) #t)
-(check-expect (procedure? arg-max) #t)
-(check-expect (procedure? merge) #t)
-(check-expect (procedure? permutation?) #t)
-(check-expect (procedure? split-list) #t)
+(check-expect (function? count) #t)
+(check-expect (function? countall) #t)
+(check-expect (function? mirror) #t)
+(check-expect (function? flatten) #t)
+(check-expect (function? contig-sublist?) #t)
+(check-expect (function? sublist?) #t)
+(check-expect (function? takewhile) #t)
+(check-expect (function? dropwhile) #t)
+(check-expect (function? zip) #t)
+;;(check-expect (function? unzip) #t)
+(check-expect (function? arg-max) #t)
+(check-expect (function? merge) #t)
+(check-expect (function? permutation?) #t)
+(check-expect (function? split-list) #t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Problem 2a

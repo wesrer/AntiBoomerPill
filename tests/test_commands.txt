@@ -8,3 +8,7 @@
 
 ../../bin/uft ho-vo ../../tests/test.scm | valgrind --leak-check=full env SVMDEBUG=decode ../../bin/svm predef.vo
 -nothing
+
+../../bin/uft ho-vo ../../tests/solution.scm | valgrind --leak-check=full ../../bin/svm predef.vo -
+
+../../bin/uft ho-vo ../../tests/alloc.scm | valgrind --leak-check=full env SVMDEBUG=gcstats ../../bin/svm predef.vo -

@@ -29,7 +29,7 @@
 #include "disasm.h"
 
 #define VMSAVE()  (vm->registers = regs, vm->current_fun = fun)
-#define VMLOAD()  (fun = vm->current_fun)
+#define VMLOAD()  (fun = vm->current_fun )
 #define GC() (VMSAVE(), gc(vm), VMLOAD())
 
 
@@ -49,8 +49,13 @@ void vmrun(VMState vm, struct VMFunction *fun) {
     Value RZ = regs[uZ(i)];
     vm->current_fun = fun;
 
+    // for (int i = 0; i <= fun->nregs; i++){
+    //   print("reg %d is %v \n", i, regs[i]);
+    // }
+
     if (dump_decode)
       idump(stderr, vm, cip, i, vm->window, &RX, &RY, &RZ);
+
 
     switch(opcode(i)) {
       case If:
@@ -63,8 +68,8 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       case GoTo:
       { 
         int32_t jump = iXYZ(i);
-        if (jump < 0 && gc_needed)
-          GC();
+        // if (jump < 0 && gc_needed)
+        //   GC();
         cip += jump;
         continue;
       }
@@ -178,15 +183,17 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         regs[uX(i)] = mkBooleanValue(b);
         break;
       }
-      //TODO: check if there are right number of arguments
+      //TODO: check if theclere are right number of arguments
       case Call:
       {
-        if (gc_needed)
-          GC();
+        // if (gc_needed)
+        //   GC();
         
         int lastarg = uZ(i);
         int funreg = uY(i);
         int destreg = uX(i);
+
+
         struct Activation a;
 
         a.start_window = funreg;
@@ -195,14 +202,21 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         a.fun = fun;
         a.pc = cip;
 
+        printf("calling function in r%d, with registers r%d - r%d\n", funreg, funreg, lastarg);
+
         if (vm->callstack_size >= vm->callstack_length) {
           runerror(vm, "Stack overflow!");
         }
 
         vm->callstack[vm->callstack_size] = a;
         int n = lastarg - funreg;
+        print("number of arguments in callee: %d\n", n);
+        print("arity of callee: %d\n", n);
+
+        print("shifting window by: %d\n", a.start_window);
+
         vm->callstack_size++; 
-        vm->window += funreg;
+        vm->window += a.start_window;
         Value callee = regs[funreg];
         
         if (callee.tag == VMFunction)
@@ -306,17 +320,25 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         Value v = regs[uY(i)];
         if (eqvalue(emptylistValue, v)) 
           runerror(vm, "car of empty list");
-        // if (eqvalue(nilValue, v)) 
-        //   runerror(vm, "car of nil value");
-        struct VMBlock* bl = AS_CONS_CELL(vm, regs[uY(i)]);
 
+        struct VMBlock* bl = AS_CONS_CELL(vm, v);
+        // memcpy(regs + uX(i), bl->slots, sizeof(bl->slots[0]));
         regs[uX(i)] = bl->slots[0];
+        // print("Car'd value is:%v\n", regs[uX(i)]);
+        // print("Car'd value is:%v\n", bl->slots[1]);
+        // print("Car'd value is:%v\n",regs[uY(i)]);
+
+        // print("Value at rear is:%v\n", v);
         break;
       }
       case Cdr:
       {
         struct VMBlock* bl = AS_CONS_CELL(vm, regs[uY(i)]);
+        // if (bl->nslots == 1)
+        //   {regs[uX(i)] = emptylistValue;  
+        //   break;}    
         regs[uX(i)] = bl->slots[1];
+
 
         // if (eqvalue(regs[uY(i)], emptylistValue)) {
         //    regs[uX(i)] = emptylistValue;
