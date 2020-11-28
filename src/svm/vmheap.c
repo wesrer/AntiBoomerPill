@@ -642,67 +642,67 @@ extern void gc(struct VMState *vm) {
   //    I recommend capturing the list of allocated pages
   //    in a local variable called `fromspace`.
 
-  Page fromspace = current;
-  current = NULL;
-  count.current.pages = 0;
-  count.current.objects = 0;
-  count.current.bytes_requested = 0;
-  take_available_page();
+  // Page fromspace = current;
+  // current = NULL;
+  // count.current.pages = 0;
+  // count.current.objects = 0;
+  // count.current.bytes_requested = 0;
+  // take_available_page();
 
-  // // 2. Set flag `gc_in_progress` (so statistics are tracked correctly).
-  gc_in_progress = true;
+  // // // 2. Set flag `gc_in_progress` (so statistics are tracked correctly).
+  // gc_in_progress = true;
 
-  // 3. Color all the roots gray using `scan_vmstate`.
-  scan_vmstate(vm);
+  // // 3. Color all the roots gray using `scan_vmstate`.
+  // scan_vmstate(vm);
 
-  // 4. While the gray stack is not empty, pop a value and scan it.
-  while (!VStack_isempty(gray)) {
-    Value v = VStack_pop(gray);
-    scan_value(v);
-  }
+  // // 4. While the gray stack is not empty, pop a value and scan it.
+  // while (!VStack_isempty(gray)) {
+  //   Value v = VStack_pop(gray);
+  //   scan_value(v);
+  // }
 
-  // 5. Call `VMString_drop_dead_strings()`.
-  VMString_drop_dead_strings();
+  // // 5. Call `VMString_drop_dead_strings()`.
+  // VMString_drop_dead_strings();
 
-  // 6. Take the pages captured in step 1 and make them available.
-  make_available(fromspace);
+  // // 6. Take the pages captured in step 1 and make them available.
+  // int num_captured = make_available(fromspace);
   // count.current.pages -= num_captured;
 
-  // 7. Use `growheap` to acquire more available pages until the
-  //     ratio of heap size to live data meets what you get from
-  //     `target_gamma`.  (The amount of live data is the number of
-  //     pages copied to `current` in steps 3 and 4.)
-  double new_gamma = target_gamma(vm->globals);
-  growheap(new_gamma, count.current.pages);
+  // // 7. Use `growheap` to acquire more available pages until the
+  // //     ratio of heap size to live data meets what you get from
+  // //     `target_gamma`.  (The amount of live data is the number of
+  // //     pages copied to `current` in steps 3 and 4.)
+  // double new_gamma = target_gamma(vm->globals);
+  // growheap(new_gamma, count.current.pages);
   
 
-  // 8. Update counter `total.collections` and
-  //    flags `gc_needed` and `gc_in_progress`.
-  total.collections += 1;
+  // // 8. Update counter `total.collections` and
+  // //    flags `gc_needed` and `gc_in_progress`.
+  // total.collections += 1;
 
-  gc_in_progress = false;
-  gc_needed = false;
+  // gc_in_progress = false;
+  // gc_needed = false;
 
-  // 9. If `svmdebug_value("gcstats")` is set and contains a + sign, 
-  //    print statistics as suggested by exercise 2 on page 299.
+  // // 9. If `svmdebug_value("gcstats")` is set and contains a + sign, 
+  // //    print statistics as suggested by exercise 2 on page 299.
 
 
-  // functions that will be used:
+  // // functions that will be used:
   (void) scan_vmstate;   // in step 3
   (void) scan_value;     // in step 4
   (void) make_available; // in step 6
   (void) target_gamma;   // in step 7
   (void) growheap;       // in step 7
 
-  if (svmdebug_value("gcstats") && strchr(svmdebug_value("gcstats"), '+')) {
-    fprintf(stderr, "Heap contains %d pages of which %d are live (ratio %.2f)\n",
-            count.available.pages + count.current.pages, count.current.pages,
-            (double)(count.available.pages + count.current.pages) / (double) count.current.pages);
-    fprint(stderr, "%d of %d objects holding %, of %, requested bytes survived\n",
-            -1, -1, -1, -1);  // you fill in here
-    fprintf(stderr, "Survival rate is %.1f%% of objects and %.1f%% of bytes\n",
-            -1.0, -1.0);  // you fill in here
-  }
+  // if (svmdebug_value("gcstats") && strchr(svmdebug_value("gcstats"), '+')) {
+  //   fprintf(stderr, "Heap contains %d pages of which %d are live (ratio %.2f)\n",
+  //           count.available.pages + count.current.pages, count.current.pages,
+  //           (double)(count.available.pages + count.current.pages) / (double) count.current.pages);
+  //   fprint(stderr, "%d of %d objects holding %, of %, requested bytes survived\n",
+  //           -1, -1, -1, -1);  // you fill in here
+  //   fprintf(stderr, "Survival rate is %.1f%% of objects and %.1f%% of bytes\n",
+  //           -1.0, -1.0);  // you fill in here
+  // }
   
 }
 
