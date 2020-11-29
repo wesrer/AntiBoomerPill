@@ -96,6 +96,7 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       case Not:
       {
         bool b = AS_BOOLEAN(vm, regs[uX(i)]);
+        print("in not, target boolean is: %v", regs[uX(i)]);
         regs[uX(i)] = mkBooleanValue(!b);
         break;
       }
@@ -142,6 +143,15 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         break;
       }
       case Divide: 
+      {
+        Number_T num1 = AS_NUMBER(vm, regs[uY(i)]);
+        Number_T num2 = AS_NUMBER(vm, regs[uZ(i)]);
+        int res = (int) num1 / num2;
+        Value v = mkNumberValue(res);
+        regs[uX(i)] = v;
+        break;
+      }
+      case FloatDiv: 
       {
         Number_T num1 = AS_NUMBER(vm, regs[uY(i)]);
         Number_T num2 = AS_NUMBER(vm, regs[uZ(i)]);
@@ -202,7 +212,8 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         a.fun = fun;
         a.pc = cip;
 
-        printf("calling function in r%d, with registers r%d - r%d\n", funreg, funreg, lastarg);
+        // printf("calling function in r%d, with registers r%d - r%d\n", funreg, funreg, lastarg);
+        // print("in function, value in %d is: %v\n", 1, regs[1]);
 
         if (vm->callstack_size >= vm->callstack_length) {
           runerror(vm, "Stack overflow!");
@@ -210,10 +221,10 @@ void vmrun(VMState vm, struct VMFunction *fun) {
 
         vm->callstack[vm->callstack_size] = a;
         int n = lastarg - funreg;
-        print("number of arguments in callee: %d\n", n);
-        print("arity of callee: %d\n", n);
+        // print("number of arguments in callee: %d\n", n);
+        // print("arity of callee: %d\n", n);
 
-        print("shifting window by: %d\n", a.start_window);
+        // print("shifting window by: %d\n", a.start_window);
 
         vm->callstack_size++; 
         vm->window += a.start_window;
@@ -304,7 +315,9 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       }
       case Null_Observer:
       {
-        // print("in null observer\n");
+        // print("in null observer, value in %d is: %v\n", uY(i), regs[uY(i)]);
+        // print("in null observer, value in %d is: %v\n", 1, regs[1]);
+
         regs[uX(i)] = mkBooleanValue(eqvalue(regs[uY(i)], emptylistValue));
         // print("in null observer: %v\n", mkBooleanValue(eqvalue(regs[uY(i)], emptylistValue)));
         break;
@@ -312,7 +325,8 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       case CheckAssert:
       {
         Value v = vm->literal_pool[uYZ(i)];
-        regs[uX(i)] = mkBooleanValue(AS_BOOLEAN(vm, v));
+        check(AS_CSTRING(vm, v),  regs[uX(i)]);
+        expect(AS_CSTRING(vm, v),  mkBooleanValue(true));
         break;      
       }
       case Car:
@@ -387,6 +401,7 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       case Cons:
       {
         Value cons_val = regs[uY(i)];
+        //  print("in function, value in %d is: %v\n", 1, regs[1]);
         VMNEW(struct VMBlock*, new_list, vmsize_block(2));
         new_list->nslots = 2;
         new_list->slots[1] = regs[uZ(i)];
