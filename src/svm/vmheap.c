@@ -601,6 +601,9 @@ static void scan_vmstate(struct VMState *vm) {
     //     affect future computations because they aren't used)
     int highest_reg = vm->current_fun->nregs + vm->window;
 
+    // New bugfix addition
+    forward_payload(&vm->checkv);
+
     for(int i = 0; i < highest_reg; i++)
     {
       forward_payload(&vm->registers[i]);
@@ -631,7 +634,7 @@ static void scan_vmstate(struct VMState *vm) {
   // Also increment `total.collections` and clear flag `gc_needed`.
 
 extern void gc(struct VMState *vm) {
-  (void) vm;
+  printf("inside gc");
   // Narrative sketch of the algorithm (see page 266):
 
   // 1. Capture the list of allocated pages from `current`,

@@ -83,14 +83,14 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         {
         Value source = regs[uX(i)];
         Value v = vm->literal_pool[uYZ(i)];
-        check(AS_CSTRING(vm, v),  source);
+        check(vm, AS_CSTRING(vm, v),  source);
         break;
         }
       case Expect:
         {
         Value source = regs[uX(i)];
         Value v = vm->literal_pool[uYZ(i)];
-        expect(AS_CSTRING(vm, v),  source);
+        expect(vm, AS_CSTRING(vm, v),  source);
         break;
         }
       case Not:
@@ -198,7 +198,6 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       {
         // if (gc_needed)
         //   GC();
-        
         int lastarg = uZ(i);
         int funreg = uY(i);
         int destreg = uX(i);
@@ -244,6 +243,7 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       }
       case GC:
       {
+        print("calling gc as a command");
         GC();
         break;
       }
