@@ -156,15 +156,6 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       {
         Number_T num1 = AS_NUMBER(vm, regs[uY(i)]);
         Number_T num2 = AS_NUMBER(vm, regs[uZ(i)]);
-        int res = (int) num1 / num2;
-        Value v = mkNumberValue(res);
-        regs[uX(i)] = v;
-        break;
-      }
-      case FloatDiv: 
-      {
-        Number_T num1 = AS_NUMBER(vm, regs[uY(i)]);
-        Number_T num2 = AS_NUMBER(vm, regs[uZ(i)]);
         Value v = mkNumberValue(num1 / num2);
         regs[uX(i)] = v;
         break;
@@ -304,6 +295,8 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         int funreg = uX(i);  //this is r0 from the semantics
         //check that last arg - funreg is the arity
 
+        
+
         // struct Activation last_call = vm->callstack[vm->callstack_size];
         //TODO: delete this line:
         Value callee = regs[funreg];
@@ -311,6 +304,17 @@ void vmrun(VMState vm, struct VMFunction *fun) {
          fun = callee.f;
         else if (callee.tag == VMClosure)
          fun = callee.hof->f;
+
+
+        if ((lastarg-funreg) > fun->arity) 
+        {
+        //   printf("number of arguments of callee: %d\n", n);
+        // printf("arity of  callee: %d\n", fun->arity);
+        // printf("arity of function: %d\n", a.fun->arity);
+          runerror(vm, "Function arity and arguments mismatched ");
+        }
+        if (fun->nregs >= 255)
+          runerror(vm, "Register file overflowed");
 
         memmove(regs, regs + funreg, (lastarg-funreg + 1) * sizeof(*regs));
 
