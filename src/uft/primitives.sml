@@ -110,7 +110,9 @@ struct
   val loadliteral  = SETS_REGISTER { name = "loadliteral",  arity = 1 }
   val plus         = SETS_REGISTER { name = "+",            arity = 2 }
   val subtract     = SETS_REGISTER { name = "-",            arity = 2 }
-  val divide        = SETS_REGISTER { name = "/",            arity = 2 }
+  val floatdiv     = SETS_REGISTER { name = "//",            arity = 2 }
+  val idiv        = SETS_REGISTER { name = "/",            arity = 2 }
+
   val multiply     = SETS_REGISTER { name = "*",            arity = 2 }
   val not         = SETS_REGISTER { name = "!",            arity = 2 }
   val makeconscell = SETS_REGISTER { name = "makeconscell",  arity = 1 }

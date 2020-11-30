@@ -1,19 +1,18 @@
 ;; Comp105 scheme assignment
 ;; You will be implementing these functions.
-(check-expect (procedure? count) #t)
-(check-expect (procedure? countall) #t)
-(check-expect (procedure? mirror) #t)
-(check-expect (procedure? flatten) #t)
-(check-expect (procedure? contig-sublist?) #t)
-(check-expect (procedure? sublist?) #t)
-(check-expect (procedure? takewhile) #t)
-(check-expect (procedure? dropwhile) #t)
-(check-expect (procedure? zip) #t)
-;;(check-expect (procedure? unzip) #t)
-(check-expect (procedure? arg-max) #t)
-(check-expect (procedure? merge) #t)
-(check-expect (procedure? permutation?) #t)
-(check-expect (procedure? split-list) #t)
+(check-expect (function? count) #t)
+(check-expect (function? countall) #t)
+(check-expect (function? mirror) #t)
+(check-expect (function? flatten) #t)
+(check-expect (function? contig-sublist?) #t)
+(check-expect (function? sublist?) #t)
+(check-expect (function? takewhile) #t)
+(check-expect (function? dropwhile) #t)
+(check-expect (function? zip) #t)
+;;(check-expect (function? unzip) #t)
+(check-expect (function? arg-max) #t)
+(check-expect (function? merge) #t)
+(check-expect (function? split-list) #t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Problem 2a
@@ -211,28 +210,7 @@
                           ;; rearranging the lowest element
                           (merge (cons (car ys) xs) (cdr ys)) 
                           ))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Problem G
-;;
-;; permutation? takes in two lists xs and ys and checks whether
-;; they are permutations of each other, i.e. whether they both
-;; have the exact same elements the exact same number of times
-(check-expect (permutation? '(a b c) '(c a b)) #t)
-(check-expect (permutation? '(a b c d) '(c a b)) #f)
-(check-expect (permutation? '(a b a) '(b a b)) #f)
-;; Helper function is necessary to skip the length check at 
-;; every recursive step
-(define is-permutation? (xs ys)
-    (if (null? xs) #t
-            (if (equal? (count (car xs) xs) (count (car xs) ys))
-                  (is-permutation? (cdr xs) ys)
-                  #f)))
-(define permutation? (xs ys)
-  (if (equal? (length xs) (length ys))
-          (is-permutation? xs ys)
-          ;; lengths of xs and ys are unequal
-          #f))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Problem H
