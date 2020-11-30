@@ -640,7 +640,6 @@ static void scan_vmstate(struct VMState *vm) {
   // Also increment `total.collections` and clear flag `gc_needed`.
 
 extern void gc(struct VMState *vm) {
-  printf("in gc\n");
   // printf("callee in gc: %p\n", (void *) vm->current_fun);
   (void) vm;
   // Narrative sketch of the algorithm (see page 266):
@@ -715,16 +714,13 @@ extern void gc(struct VMState *vm) {
 }
 
 static void growheap(double gamma, int nlive) {
-  printf("in growheap\n");
-  (void) gamma;
-  (void) nlive;
   bool grew = false;
   while ((count.current.pages + count.available.pages) < (nlive * gamma))
     {
       acquire_available_page();
       grew = true;
     }
-  // availability_floor = (count.available.pages + 1) / 2;
+  availability_floor = (count.available.pages + 1) / 2;
   if (grew && svmdebug_value("growheap"))
     fprintf(stderr, "Grew heap to %d pages\n",
                     count.current.pages + count.available.pages);
