@@ -313,6 +313,8 @@ void vmrun(VMState vm, struct VMFunction *fun) {
          fun = callee.f;
         else if (callee.tag == VMClosure)
          fun = callee.hof->f;
+        else
+         runerror(vm, "function used is not defined");
 
         memmove(regs, regs + funreg, (lastarg-funreg + 1) * sizeof(*regs));
 
