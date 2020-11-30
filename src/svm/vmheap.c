@@ -587,12 +587,12 @@ static void scan_value(Value v) {
   }
 }
 
-// static void scan_activation(struct Activation *p) {
-//   // printf("scanning act\n");
-//   p->fun = forward_function(p->fun, NULL);
-//   // printf("arity in scan_activation:%d\n", p->fun->arity);
-//   return;
-// }
+static void scan_activation(struct Activation *p) {
+  // printf("scanning act\n");
+  p->fun = forward_function(p->fun, NULL);
+  // printf("arity in scan_activation:%d\n", p->fun->arity);
+  return;
+}
 
 static void scan_vmstate(struct VMState *vm) {
     // see book chapter page 265 about roots
@@ -603,7 +603,7 @@ static void scan_vmstate(struct VMState *vm) {
     int highest_reg = vm->current_fun->nregs + vm->window;
 
     // New bugfix addition
-    forward_payload(&vm->checkv);
+    // forward_payload(&vm->checkv);
 
     for(int i = 0; i < highest_reg; i++)
     {
@@ -618,10 +618,10 @@ static void scan_vmstate(struct VMState *vm) {
     }
 
     // roots: each function on the call stack
-    // for (int i = 0; i < vm->callstack_size; i++)
-    // {
-    //   scan_activation(&(vm->callstack[i]));
-    // }
+    for (int i = 0; i < vm->callstack_size; i++)
+    {
+      scan_activation(&(vm->callstack[i]));
+    }
     // root: the currently running function (which might not be on the call stack)
     vm->current_fun = forward_function(vm->current_fun, NULL);
     // printf("function ptr changed to: %p\n", (void *) vm->current_fun);
@@ -640,7 +640,6 @@ static void scan_vmstate(struct VMState *vm) {
   // Also increment `total.collections` and clear flag `gc_needed`.
 
 extern void gc(struct VMState *vm) {
-  printf("in gc\n");
   // printf("callee in gc: %p\n", (void *) vm->current_fun);
   (void) vm;
   // Narrative sketch of the algorithm (see page 266):
@@ -715,16 +714,13 @@ extern void gc(struct VMState *vm) {
 }
 
 static void growheap(double gamma, int nlive) {
-  printf("in growheap\n");
-  (void) gamma;
-  (void) nlive;
   bool grew = false;
   while ((count.current.pages + count.available.pages) < (nlive * gamma))
     {
       acquire_available_page();
       grew = true;
     }
-  // availability_floor = (count.available.pages + 1) / 2;
+  availability_floor = (count.available.pages + 1) / 2;
   if (grew && svmdebug_value("growheap"))
     fprintf(stderr, "Grew heap to %d pages\n",
                     count.current.pages + count.available.pages);
