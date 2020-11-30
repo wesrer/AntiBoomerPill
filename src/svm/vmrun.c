@@ -260,7 +260,7 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         else if (callee.tag == VMClosure)
          fun = callee.hof->f;
         else         
-          runerror(vm, "Attempted to call a non function\n");
+          runerror(vm, "Attempted to tailcall a non function\n");
 
         if ((lastarg-funreg) > fun->arity) 
           runerror(vm, "Function arity and arguments mismatched ");
