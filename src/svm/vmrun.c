@@ -50,10 +50,6 @@ void vmrun(VMState vm, struct VMFunction *fun) {
     Value RZ = regs[uZ(i)];
     vm->current_fun = fun;
 
-    // for (int i = 0; i <= fun->nregs; i++){
-    //   print("reg %d is %v \n", i, regs[i]);
-    // }
-
     if (dump_decode)
       idump(stderr, vm, cip, i, vm->window, &RX, &RY, &RZ);
 
@@ -200,70 +196,35 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         int lastarg = uZ(i);
         int funreg = uY(i);
         int destreg = uX(i);
-
         if (gc_needed)
-        {
-        //  printf("callee before gc: %p\n", (void*) fun);
-        //  printf("arity of callee: %d\n", fun->arity);
-        //  printf("function ptr changed to:%p\n", (void*) a.fun);
-        GC();
-        // printf("garbage collected callee: %p\n", (void*) fun);
-        }
-
+          GC();
         struct Activation a;
-
         a.start_window = funreg;
         a.end_window = lastarg;
         a.dest_reg = destreg;
-        // printf("callee in act record set to: %p\n", (void*) fun);
-
         a.fun = fun;
         a.pc = cip;
-
-        // printf("arity of fun being stored on activation record: %d\n", fun->arity);
-
-
-        // printf("calling function in r%d, with registers r%d - r%d\n", funreg, funreg, lastarg);
-        // print("in function, value in %d is: %v\n", 1, regs[1]);
-
-        if (vm->callstack_size >= vm->callstack_length) {
+        if (vm->callstack_size >= vm->callstack_length)
           runerror(vm, "Stack overflow!");
-        }
-
         vm->callstack[vm->callstack_size] = a;
-        int n = lastarg - funreg;
-        // print("number of arguments in callee: %d\n", n);
-        // print("arity of callee: %d\n", n);
 
-        // print("shifting window by: %d\n", a.start_window);
 
-        vm->callstack_size++; 
-        vm->window += a.start_window;
+        vm->callstack_size++;
+        vm->window += a.start_window; //shift the window
+
         Value callee = regs[funreg];
-        
         if (callee.tag == VMFunction)
          fun = callee.f;
         else if (callee.tag == VMClosure)
          fun = callee.hof->f;
         else
          runerror(vm, "Attempted to call a non function\n");
-      
-        // printf("number of arguments: %d\n", n);
-        // printf("arity of function: %d\n", fun->arity);
-
-
-
-        if (n > fun->arity) 
-        {
-        //   printf("number of arguments of callee: %d\n", n);
-        // printf("arity of  callee: %d\n", fun->arity);
-        // printf("arity of function: %d\n", a.fun->arity);
-          runerror(vm, "Function arity and arguments mismatched ");
-        }
+        if (lastarg - funreg > fun->arity) 
+            runerror(vm, "Function arity and arguments mismatched ");
         if (fun->nregs >= 255)
           runerror(vm, "Register file overflowed");
+
         cip = 0;
-        // printf("calling gc");
         continue;
       }
       case GC:
@@ -275,15 +236,12 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       //TODO: check if there are right number of arguments
       case Return:
       {
-        // printf("previous fun pointer: %p\n", (void *) fun);
         struct Activation a = vm->callstack[vm->callstack_size - 1];
         regs[a.dest_reg - a.start_window] = regs[uX(i)];
         vm->callstack_size--;
         cip = a.pc + 1;
         vm->window -= a.start_window;
         fun = a.fun;
-        // printf("reset fun pointer: %p\n", (void *) fun);
-        // print("in return\n");
         continue;
       }
       case Mov: 
@@ -295,36 +253,21 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       {
         int lastarg = uY(i); //this is rn from the semantics
         int funreg = uX(i);  //this is r0 from the semantics
-        //check that last arg - funreg is the arity
 
-        
-
-        // struct Activation last_call = vm->callstack[vm->callstack_size];
-        //TODO: delete this line:
         Value callee = regs[funreg];
         if (callee.tag == VMFunction)
          fun = callee.f;
         else if (callee.tag == VMClosure)
          fun = callee.hof->f;
-
+        else         
+          runerror(vm, "Attempted to call a non function\n");
 
         if ((lastarg-funreg) > fun->arity) 
-        {
-        //   printf("number of arguments of callee: %d\n", n);
-        // printf("arity of  callee: %d\n", fun->arity);
-        // printf("arity of function: %d\n", a.fun->arity);
           runerror(vm, "Function arity and arguments mismatched ");
-        }
         if (fun->nregs >= 255)
           runerror(vm, "Register file overflowed");
 
-        memmove(regs, regs + funreg, (lastarg-funreg + 1) * sizeof(*regs));
-
-      //  if (lastarg-funreg > fun->arity) 
-      //     runerror(vm, "Function arity and arguments mismatched ");
-      //   if (fun->nregs >= 255)
-      //     runerror(vm, "Register file overflowed");
-        //check that there are enough regs for function
+        memmove(regs, regs + funreg, (lastarg - funreg + 1) * sizeof(*regs));
         cip = 0;
         continue;
       }
@@ -350,18 +293,13 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       }
       case Nil_Observer:
       {
-        // print("in nil observer\n");
         regs[uX(i)] = mkBooleanValue(eqvalue(regs[uY(i)], nilValue));
         break;
 
       }
       case Null_Observer:
       {
-        // print("in null observer, value in %d is: %v\n", uY(i), regs[uY(i)]);
-        // print("in null observer, value in %d is: %v\n", 1, regs[1]);
-
         regs[uX(i)] = mkBooleanValue(eqvalue(regs[uY(i)], emptylistValue));
-        // print("in null observer: %v\n", mkBooleanValue(eqvalue(regs[uY(i)], emptylistValue)));
         break;
       }
       case CheckAssert:
@@ -378,43 +316,17 @@ void vmrun(VMState vm, struct VMFunction *fun) {
           runerror(vm, "car of empty list");
 
         struct VMBlock* bl = AS_CONS_CELL(vm, v);
-        // memcpy(regs + uX(i), bl->slots, sizeof(bl->slots[0]));
         regs[uX(i)] = bl->slots[0];
-        // print("Car'd value is:%v\n", regs[uX(i)]);
-        // print("Car'd value is:%v\n", bl->slots[1]);
-        // print("Car'd value is:%v\n",regs[uY(i)]);
-
-        // print("Value at rear is:%v\n", v);
         break;
       }
       case Cdr:
       {
-        struct VMBlock* bl = AS_CONS_CELL(vm, regs[uY(i)]);
-        // if (bl->nslots == 1)
-        //   {regs[uX(i)] = emptylistValue;  
-        //   break;}    
+        struct VMBlock* bl = AS_CONS_CELL(vm, regs[uY(i)]);   
         regs[uX(i)] = bl->slots[1];
-
-
-        // if (eqvalue(regs[uY(i)], emptylistValue)) {
-        //    regs[uX(i)] = emptylistValue;
-        // }
-        // else {
-        //   struct VMBlock* bl = AS_CONS_CELL(vm, regs[uY(i)]);
-        //   if (bl->nslots == 1)
-        //     regs[uX(i)] = emptylistValue;
-        //   else {
-        //   VMNEW(struct VMBlock*, new_list, vmsize_block(bl->nslots - 1));
-        //   new_list->nslots = bl->nslots - 1;
-        //   memcpy(new_list->slots, bl->slots + 1, bl->nslots * sizeof(bl->slots[0]));
-        //   regs[uX(i)] = mkConsValue(new_list);
-        //   }
-        // }
         break;
       }
       case MkClosure:
       {
-        // Number_T nslots = AS_NUMBER(vm, uZ(i));
         VMNEW(struct VMClosure*, closure, vmsize_closure(uZ(i)));
         closure->nslots = uZ(i);
         closure->f = AS_VMFUNCTION(vm, regs[uY(i)]);
@@ -424,14 +336,12 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       case GetClSlot:
       {
         struct VMClosure* closure = AS_CLOSURE(vm, regs[uY(i)]);
-        // Number_T slot = AS_NUMBER(vm, uZ(i));
         regs[uX(i)] = closure->captured[uZ(i)];
         break;
       }
       case SetClSlot:
       {
         struct VMClosure* closure = AS_CLOSURE(vm, regs[uX(i)]);
-        // Number_T slot = AS_NUMBER(vm, uZ(i));
         closure->captured[uZ(i)] =  regs[uY(i)];
         break;
       }
@@ -443,7 +353,6 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       case Cons:
       {
         Value cons_val = regs[uY(i)];
-        //  print("in function, value in %d is: %v\n", 1, regs[1]);
         VMNEW(struct VMBlock*, new_list, vmsize_block(2));
         new_list->nslots = 2;
         new_list->slots[1] = regs[uZ(i)];
@@ -459,8 +368,6 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         break;
     }
     cip++;
-    // printf("cip in next iteration of while loop:%d\n", cip);
-
   }
 
   // Run code from `fun` until it executes a Halt instruction.

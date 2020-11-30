@@ -13,5 +13,5 @@
      (= (mod x 2) 0))
 
         (check-assert (not (even? 5)))
-        (check-assert (even? 4))
+        (check-assert (aditi? 4))
 
