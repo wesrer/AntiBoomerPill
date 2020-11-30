@@ -608,11 +608,13 @@ static void scan_vmstate(struct VMState *vm) {
     {
       forward_payload(&vm->registers[i]);
     }
+
     // roots: all literal slots that are in use
     for(int i = 0; i < vm->num_literals; i++)
     {
       forward_payload(&vm->literal_pool[i]);
     }
+
     // roots: each function on the call stack
     for (int i = 0; i < vm->callstack_size; i++)
     {

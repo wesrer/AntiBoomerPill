@@ -222,6 +222,8 @@ void vmrun(VMState vm, struct VMFunction *fun) {
          fun = callee.f;
         else if (callee.tag == VMClosure)
          fun = callee.hof->f;
+        else
+         runerror(vm, "Attempted to call a non function\n");
       
         if (n > fun->arity) 
           runerror(vm, "Function arity and arguments mismatched ");

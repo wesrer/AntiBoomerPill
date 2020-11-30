@@ -26,14 +26,11 @@
 void freestatep(VMState *sp) {
     assert(sp && *sp);
     VMState vm = *sp;
-    free(vm->registers);
-    free(vm->literal_pool);
-    free(vm->callstack);
+    *sp = NULL
     free(vm);
 }
 
 VMState newstate(void) {
-
     VMState state = malloc(sizeof(*state));
     state->ip = 0;
     state->num_literals = 0;
