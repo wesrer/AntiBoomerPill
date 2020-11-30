@@ -245,6 +245,8 @@ void vmrun(VMState vm, struct VMFunction *fun) {
          fun = callee.f;
         else if (callee.tag == VMClosure)
          fun = callee.hof->f;
+        else
+         runerror(vm, "Attempted to call a non function\n");
       
         // printf("number of arguments: %d\n", n);
         // printf("arity of function: %d\n", fun->arity);
