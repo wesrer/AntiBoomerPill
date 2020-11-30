@@ -19,7 +19,7 @@
         xs
         (append (mirror (cdr xs)) (list1 (mirror (car xs))))))
 
-        (check-expect (aditi '()) '())
+        (check-expect (mirror '()) '())
         (check-expect (mirror '((a (b 5)) (c d) e)) '(e (d c) ((5 b) a)))
 
 ;; (flatten xs), when xs is a list of S-expressions, constructs a list having

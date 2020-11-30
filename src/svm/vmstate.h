@@ -47,6 +47,8 @@ typedef struct VMState {
     //Globals
     VTable_T globals;
 
+    Value checkv;
+
 } *VMState;
 
 

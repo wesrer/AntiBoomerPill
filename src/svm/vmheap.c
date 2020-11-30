@@ -602,7 +602,9 @@ static void scan_vmstate(struct VMState *vm) {
     //     affect future computations because they aren't used)
     int highest_reg = vm->current_fun->nregs + vm->window;
 
-    // print("highest reg: %d\n", highest_reg);
+    // New bugfix addition
+    forward_payload(&vm->checkv);
+
     for(int i = 0; i < highest_reg; i++)
     {
       // print("%v ", vm->registers[i]);
@@ -688,8 +690,8 @@ extern void gc(struct VMState *vm) {
   gc_in_progress = false;
   gc_needed = false;
 
-  // 9. If `svmdebug_value("gcstats")` is set and contains a + sign, 
-  //    print statistics as suggested by exercise 2 on page 299.
+  // // 9. If `svmdebug_value("gcstats")` is set and contains a + sign, 
+  // //    print statistics as suggested by exercise 2 on page 299.
 
 
   // // // functions that will be used:

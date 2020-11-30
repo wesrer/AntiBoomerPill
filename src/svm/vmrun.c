@@ -48,6 +48,7 @@ void vmrun(VMState vm, struct VMFunction *fun) {
     Value RX = regs[uX(i)];
     Value RY = regs[uY(i)];
     Value RZ = regs[uZ(i)];
+    vm->current_fun = fun;
 
     // for (int i = 0; i <= fun->nregs; i++){
     //   print("reg %d is %v \n", i, regs[i]);
@@ -155,6 +156,15 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       {
         Number_T num1 = AS_NUMBER(vm, regs[uY(i)]);
         Number_T num2 = AS_NUMBER(vm, regs[uZ(i)]);
+        int res = (int) num1 / num2;
+        Value v = mkNumberValue(res);
+        regs[uX(i)] = v;
+        break;
+      }
+      case FloatDiv: 
+      {
+        Number_T num1 = AS_NUMBER(vm, regs[uY(i)]);
+        Number_T num2 = AS_NUMBER(vm, regs[uZ(i)]);
         Value v = mkNumberValue(num1 / num2);
         regs[uX(i)] = v;
         break;
@@ -196,7 +206,6 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       //TODO: check if theclere are right number of arguments
       case Call:
       {
-
         int lastarg = uZ(i);
         int funreg = uY(i);
         int destreg = uX(i);
@@ -266,6 +275,7 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       }
       case GC:
       {
+        print("calling gc as a command");
         GC();
         break;
       }
