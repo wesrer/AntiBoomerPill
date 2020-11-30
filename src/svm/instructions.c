@@ -24,7 +24,8 @@ instruction_info instructions[] = {
   { "expect", Expect, parseR1LIT, "expect LIT, $rX" },
   { "+", Add, parseR3, "$rX := $rY + $rZ" },
   { "-", Subtract, parseR3, "$rX := $rY - $rZ" },
-  { "/", Divide, parseR3, "$rX := $rY / $rZ" },
+  { "/", IDiv, parseR3, "$rX := $rY / $rZ" },
+  { "//", FloatDiv, parseR3, "$rX := $rY // $rZ" },
   { "*", Multiply, parseR3, "$rX := $rY * $rZ" },
   { "not", Not, parseR1, "not $rX"},
   { "zero", Zero, parseR1, "zero $rX"},
@@ -51,7 +52,6 @@ instruction_info instructions[] = {
   { "=", Equal, parseR3, "$rX := $rY = $rZ" },
   { ">", GreaterThan, parseR3, "$rX := $rY > $rZ" },
   { "<", LessThan, parseR3, "$rX := $rY < $rZ" },
-  { "idiv", IDiv, parseR3, "$rX := $rY idiv $rZ" },
 
   {"mkclosure", MkClosure, parseR2U8, "$rX := closure[$rY,Z]"},
   {"getclslot", GetClSlot, parseR2U8, "$rX := $rY.Z"},

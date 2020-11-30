@@ -12,7 +12,6 @@
 ;;(check-expect (function? unzip) #t)
 (check-expect (function? arg-max) #t)
 (check-expect (function? merge) #t)
-(check-expect (function? permutation?) #t)
 (check-expect (function? split-list) #t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -211,28 +210,7 @@
                           ;; rearranging the lowest element
                           (merge (cons (car ys) xs) (cdr ys)) 
                           ))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Problem G
-;;
-;; permutation? takes in two lists xs and ys and checks whether
-;; they are permutations of each other, i.e. whether they both
-;; have the exact same elements the exact same number of times
-(check-expect (permutation? '(a b c) '(c a b)) #t)
-(check-expect (permutation? '(a b c d) '(c a b)) #f)
-(check-expect (permutation? '(a b a) '(b a b)) #f)
-;; Helper function is necessary to skip the length check at 
-;; every recursive step
-(define is-permutation? (xs ys)
-    (if (null? xs) #t
-            (if (equal? (count (car xs) xs) (count (car xs) ys))
-                  (is-permutation? (cdr xs) ys)
-                  #f)))
-(define permutation? (xs ys)
-  (if (equal? (length xs) (length ys))
-          (is-permutation? xs ys)
-          ;; lengths of xs and ys are unequal
-          #f))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Problem H

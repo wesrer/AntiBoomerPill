@@ -1,21 +1,17 @@
-;; (dropwhile p? xs) takes a predicate and a list and removes the longest 
-;; prefix of the list in which every element satisfies the predicate, and 
-;; returns the rest of the list.
+;;;;;;;;;;;;;;;;;;; COMP 105 SCHEME ASSIGNMENT ;;;;;;;;;;;;;;;
+;; Aditi Kocherlakota
+;; Spring 2019
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (even? x) takes an number and returns true if the number is even, and 
+;; false if not.
 
 ;; laws:
-;;   (dropwhile p? '()) == '()
-;;   (dropwhile p? (cons x xs)) == (dropwhile p? xs),  
-;;                                            where x satisfies the predicate.
-;;   (takewhile p? (cons x xs)) == (cons x xs), 
-;;                                     where x does not satisfy the predicate.
+;;   (even? x) == #t, where (mod x 2) is 0.
+;;   (even? x) == #f, where (mod x 2) is 1.
 
-(define dropwhile (p? xs)
-    (if (null? xs)
-        xs
-        (if (p? (car xs))
-            (dropwhile p? (cdr xs))
-            (cons (car xs) (cdr xs)))))
+(define even? (x)
+     (= (mod x 2) 0))
 
-        (check-expect (dropwhile even? '(1)) '())
-       ;; (check-expect (dropwhile even? '(2 4 6 7 8 10 12)) '(7 8 10 12))
-       ;;  (check-expect (dropwhile even? '(7 8 10 12)) '(7 8 10 12))
+        (check-assert (not (even? 5)))
+        (check-assert (even? 4))
+

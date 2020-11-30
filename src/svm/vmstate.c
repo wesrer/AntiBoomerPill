@@ -52,6 +52,8 @@ int literal_slot(VMState state, Value literal) {
     // and returning 0.  For module 2, you'll need something slightly
     // more sophisticated.
     int counter = state->num_literals;
+    assert(counter < LITERAL_SIZE);
+
     // printf("literal counter is %d\n", counter);
     (state->literal_pool)[counter] = literal;
     (state->num_literals)++;

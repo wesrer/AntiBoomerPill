@@ -1,33 +1,47 @@
-NOTE: WE RESUBMITTED CODE BECAUSE WE FIXED THINGS/ 
-REFORMATTED CODE AND LINE NUMBERS ARE DIFFERENT
+1. In python, we are able to create a dictionary, for example, without
+having to think about garbage collection.
 
-1. 
-(val y 5)
-(lambda (z) (lambda (x)  (- z (+ x y))))
+2.
+==24565==
+==24565== HEAP SUMMARY:
+==24565==     in use at exit: 0 bytes in 0 blocks
+==24565==   total heap usage: 4,758 allocs, 4,386 frees, 2,050,158 bytes allocated
+==24565==
+==24565== All heap blocks were freed -- no leaks are possible
+==24565==
+==24565== For counts of detected and suppressed errors, rerun with: -v
+==24565== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 6 from 6)
 
-captured: z
-primitive: +
-global name: y
-local: x
+3. Lines 604-612 scan registers and literals. We know that we must
+scan up to the highest register used, which we compute by adding the nregs member of the currently
+running function to the current register window in the VM. The nregs member represents the highest
+register used in the function. We scan all the literals that are in use by using the num_literals member
+of the VMstate struct.
 
-2.  Line 45-58 of closure-convert.sml, since calling free on the body
-removes global variables by returning an empty list of free variables for a 
-global var. Because of this, the captured variables in the closure do not have the
-global variables.
+4. On line 32 of vmheap.c, VMNEW is defined so that it sets the forwarding pointer of
+the value it is allocating to NULL by using GCINIT. On line 169 and 368 of vmrun.c, VMNEW
+is used to allocate a cons cell.
 
-3. lines 47-53 of embedkn.sml
+5. If a black value was put on the list, then it would be scanned for a second time even though 
+its forwarding pointer points to something in to-space, and the value would be copied once again
+and remembered. If a gray value is put onto the list for a second time, then its forwarding pointer
+points to something in to-space, but the first value would be turned black. Then, the pointer would 
+be forwarded again even though the copy is already in to-space.
 
-4. Lines 300-305 (getclslot) of vmrun.c
+6. VMSAVE flushes the register window pointer because it is necessary to update the window in the state,
+but we do not need to reload it because the register pointer does not get forwarded so it will not change.
 
-5. lines 124, 125 of knormalize.sml. We use the nbRegs function with a continuation
-that uses the list of registers allocated inside the captured variables of the 
-closure. 
+7. It is not possible to forward a pointer of type Instruction* because it is an interior pointer and we
+would have no way of finding out what VMFunction it belongs to, so we could not forward that as well.
 
-6. We did have a bug in which we were not correctly identifying
-the free variables in the lambda and line 110 of our code created a failure since
-the captured variable was not bound the environment and therefore could not be looked up.
+8. If forward_string copied the payload every single time, then the pointer to the string would change constantly
+although the payload of the string contains no pointers, so we would lose the reference to the string.
 
-7. On line 73 of closure-convert.sml, there is a guard clause in case the user
-tries to mutate a captured variable.
+9. If there was a lot of space on the heap, then there would be less frequent growing of the heap since it
+would take a lot more live data in order to trigger a heap growth. If there is less space on the heap,
+then the gamma value would be more easily reached, which would trigger more frequent heap growths.
 
-8. lines 127-145 of knormalize.sml
+10. String values are only copied if the forwarded pointer was NULL, so if a string value was in the register,
+its payload location does not change. Strings have heap allocated payloads that do not themselves contain payload
+pointers.
+
