@@ -17,7 +17,7 @@ do
   times=
   for j in $(seq 1 $N)
   do
-    uft ho-vo "$i" | cat $predefvo - | /usr/bin/time -f '%e' -o $output svm > /dev/null
+    uft ho-vo "$i" | /usr/bin/time -f '%e' -o $output svm $predefvo - > /dev/null
     printf "%5.2f  %s\n" $(cat $output) "$i"
     times="$times$(cat $output)
 "
