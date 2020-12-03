@@ -1486,6 +1486,9 @@ val xdeftable = usageParsers
 
           val car = uprim (fn PAIR (ref x, _) => x  | _ => raise RuntimeError
                                                                      "non-pair")
+          val setcar = bprim (fn (PAIR (c, _), v) => (c := v; NIL)
+                               | _ => raise RuntimeError "non-pair")
+
           val cdr = uprim (fn PAIR (ref x, ref xs) => xs | _ => raise RuntimeError
                                                                      "non-pair")
           val nullp = uprim (BOOLV o (fn NIL    => true | _ => false))
@@ -1495,7 +1498,8 @@ val xdeftable = usageParsers
           fun desugarRecord recname fieldnames =
                 recordConstructor recname fieldnames ::
                 recordPredicate recname fieldnames ::
-                recordAccessors recname 0 fieldnames
+                recordAccessors recname 0 fieldnames @
+                recordMutators recname 0 fieldnames
           and recordConstructor recname fieldnames = 
                 let val con = "make-" ^ recname
                     val formals = map (fn s => "the-" ^ s) fieldnames
@@ -1532,6 +1536,22 @@ val xdeftable = usageParsers
                                                  ]))
                 in  DEFINE (accname, (formals, body)) ::
                     recordAccessors recname (n+1) fields
+                end
+          and recordMutators recname n [] = []
+            | recordMutators recname n (field::fields) =
+                let val predname = recname ^ "?"
+                    val mutname = "set-" ^ recname ^ "-" ^ field ^ "!"
+                    val formals = ["r", "v"]
+                    val setfield = setcar (cdrs (n+1, VAR "r"), VAR "v")
+                    val body = IFX ( APPLY (VAR predname, [VAR "r"])
+                                   , setfield
+                                   , error (list [ SYM "value-passed-to"
+                                                 , SYM mutname
+                                                 , SYM "is-not-a"
+                                                 , SYM recname
+                                                 ]))
+                in  DEFINE (mutname, (formals, body)) ::
+                    recordMutators recname (n+1) fields
                 end
           and and_also (p, q) = IFX (p, q, LITERAL (BOOLV false)) : exp
           and cdrs (0, xs) = xs
@@ -2285,7 +2305,7 @@ val primitiveBasis =
                      , "(define min (x y) (if (< x y) x y))"
                      , ";  predefined uScheme functions S151a "
                      , "(define negated (n) (- 0 n))"
-                     , "(define mod (m n) (- m (* n (/ m n))))"
+                     , "(define mod (m n) (- m (* n (idiv m n))))"
                      , "(define gcd (m n) (if (= n 0) m (gcd n (mod m n))))"
                      , "(define lcm (m n) (if (= m 0) 0 (* m (/ n (gcd m n)))))"
                      , ";  predefined uScheme functions S151e "
@@ -2353,6 +2373,18 @@ fun runAs interactivity =
 (* type declarations for consistency checking *)
 val _ = op runAs : interactivity -> unit
 
+fun runPathAs interactivity "-" = runAs interactivity
+  | runPathAs interactivity path =
+  let val _ = setup_error_format interactivity
+      val prompts = if prompts interactivity then stdPrompts else noPrompts
+      val fd = TextIO.openIn path
+      val xdefs = filexdefs (path, fd, prompts)
+  in  ignore (readEvalPrintWith eprintln (xdefs, initialBasis, interactivity))
+      before TextIO.closeIn fd
+  end 
+(* type declarations for consistency checking *)
+val _ = op runAs : interactivity -> unit
+
 
 (*****************************************************************)
 (*                                                               *)
@@ -2361,6 +2393,14 @@ val _ = op runAs : interactivity -> unit
 (*****************************************************************)
 
 (* code that looks at command-line arguments and calls [[runAs]] to run the interpreter S214d *)
+
+fun strip_option [] = (NONE, [])
+  | strip_option (arg :: args) =
+      if String.isPrefix "-" arg then
+          (SOME arg, args)
+      else
+          (NONE, arg :: args)
+
 val actions =
   [ ("",    fn () => runAs (NOT_PROMPTING, NOT_PRINTING))
   , ("-v",  fn () => runAs (NOT_PROMPTING, PRINTING))
@@ -2382,7 +2422,7 @@ fun action option =
      | NONE => usage()
 
 
-val _ = case CommandLine.arguments ()
-          of []     => action ""
-           | [option] => action option
+val _ = case strip_option (CommandLine.arguments ())
+          of (opt, []) => action (getOpt (opt, ""))
+           | (NONE, files) => app (runPathAs (NOT_PROMPTING, NOT_PRINTING)) files
            | _      =>   usage ()

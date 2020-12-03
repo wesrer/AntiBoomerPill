@@ -29,7 +29,7 @@ void freestatep(VMState *sp) {
     free(vm->registers);
     free(vm->literal_pool);
     free(vm->callstack);
-    *sp = NULL
+    *sp = NULL;
     free(vm);
 }
 

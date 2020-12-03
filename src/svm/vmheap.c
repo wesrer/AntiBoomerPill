@@ -603,7 +603,7 @@ static void scan_vmstate(struct VMState *vm) {
     int highest_reg = vm->current_fun->nregs + vm->window;
 
     // New bugfix addition
-    // forward_payload(&vm->checkv);
+    forward_payload(&vm->checkv);
 
     for (int i = 0; i < highest_reg; i++)
     {
