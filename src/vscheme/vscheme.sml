@@ -1486,6 +1486,9 @@ val xdeftable = usageParsers
 
           val car = uprim (fn PAIR (ref x, _) => x  | _ => raise RuntimeError
                                                                      "non-pair")
+          val setcar = bprim (fn (PAIR (c, _), v) => (c := v; NIL)
+                               | _ => raise RuntimeError "non-pair")
+
           val cdr = uprim (fn PAIR (ref x, ref xs) => xs | _ => raise RuntimeError
                                                                      "non-pair")
           val nullp = uprim (BOOLV o (fn NIL    => true | _ => false))
@@ -1495,7 +1498,8 @@ val xdeftable = usageParsers
           fun desugarRecord recname fieldnames =
                 recordConstructor recname fieldnames ::
                 recordPredicate recname fieldnames ::
-                recordAccessors recname 0 fieldnames
+                recordAccessors recname 0 fieldnames @
+                recordMutators recname 0 fieldnames
           and recordConstructor recname fieldnames = 
                 let val con = "make-" ^ recname
                     val formals = map (fn s => "the-" ^ s) fieldnames
@@ -1532,6 +1536,22 @@ val xdeftable = usageParsers
                                                  ]))
                 in  DEFINE (accname, (formals, body)) ::
                     recordAccessors recname (n+1) fields
+                end
+          and recordMutators recname n [] = []
+            | recordMutators recname n (field::fields) =
+                let val predname = recname ^ "?"
+                    val mutname = "set-" ^ recname ^ "-" ^ field ^ "!"
+                    val formals = ["r", "v"]
+                    val setfield = setcar (cdrs (n+1, VAR "r"), VAR "v")
+                    val body = IFX ( APPLY (VAR predname, [VAR "r"])
+                                   , setfield
+                                   , error (list [ SYM "value-passed-to"
+                                                 , SYM mutname
+                                                 , SYM "is-not-a"
+                                                 , SYM recname
+                                                 ]))
+                in  DEFINE (mutname, (formals, body)) ::
+                    recordMutators recname (n+1) fields
                 end
           and and_also (p, q) = IFX (p, q, LITERAL (BOOLV false)) : exp
           and cdrs (0, xs) = xs

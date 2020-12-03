@@ -182,7 +182,8 @@ struct
         fun desugarRecord recname fieldnames =
               recordConstructor recname fieldnames ::
               recordPredicate recname fieldnames ::
-              recordAccessors recname 0 fieldnames
+              recordAccessors recname 0 fieldnames @
+              recordMutators recname 0 fieldnames
         and recordConstructor recname fieldnames = 
               let val con = "make-" ^ recname
                   val formals = map (fn s => "the-" ^ s) fieldnames
@@ -218,6 +219,22 @@ struct
               in  S.DEFINE (accname, (formals, body)) ::
                   recordAccessors recname (n+1) fields
               end
+          and recordMutators recname n [] = []
+            | recordMutators recname n (field::fields) =
+                let val predname = recname ^ "?"
+                    val mutname = "set-" ^ recname ^ "-" ^ field ^ "!"
+                    val formals = ["r", "v"]
+                    val setfield = VSchemeUtils.setcar (cdrs (n+1, S.VAR "r")) (S.VAR "v")
+                    val body = S.IFX ( S.APPLY (S.VAR predname, [S.VAR "r"])
+                                   , setfield
+                                   , error (S.SYM (concat ["value-passed-to"
+                                                 , mutname
+                                                 , "-is-not-a-"
+                                                 , recname
+                                                 ])))
+                in  S.DEFINE (mutname, (formals, body)) ::
+                    recordMutators recname (n+1) fields
+                end
         and and_also (p, q) = S.IFX (p, q, S.LITERAL (S.BOOLV false))
         and cdrs (0, xs) = xs
           | cdrs (n, xs) = VSchemeUtils.cdr (cdrs (n-1, xs))

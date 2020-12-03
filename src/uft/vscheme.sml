@@ -105,6 +105,7 @@ structure VSchemeUtils : sig
   val nth : int -> exp -> exp
   val setnth : exp -> int -> exp -> exp
 
+  val setcar : exp -> exp -> exp
 end
   =
 struct
@@ -115,6 +116,7 @@ struct
   fun car e = S.APPLY (S.VAR "car", [e])
   fun cdr e = S.APPLY (S.VAR "cdr", [e])
   fun cons x xs = S.APPLY (S.VAR "cons", [x, xs])
+  fun setcar e v = S.APPLY (S.VAR "set-car!", [e, v])
 
   fun nth 0 e = car e
     | nth k e = nth (k-1) (cdr e)
