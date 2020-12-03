@@ -80,14 +80,14 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         {
         Value source = regs[uX(i)];
         Value v = literal_value(vm, uYZ(i));
-        check(AS_CSTRING(vm, v),  source);
+        check(vm, AS_CSTRING(vm, v),  source);
         break;
         }
       case Expect:
         {
         Value source = regs[uX(i)];
         Value v = literal_value(vm, uYZ(i));
-        expect(AS_CSTRING(vm, v),  source);
+        expect(vm, AS_CSTRING(vm, v),  source);
         break;
         }
       case Not:
@@ -305,8 +305,8 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       case CheckAssert:
       {
         Value v = literal_value(vm, uYZ(i));
-        check(AS_CSTRING(vm, v),  regs[uX(i)]);
-        expect(AS_CSTRING(vm, v),  mkBooleanValue(true));
+        check(vm, AS_CSTRING(vm, v),  regs[uX(i)]);
+        expect(vm, AS_CSTRING(vm, v),  mkBooleanValue(true));
         break;      
       }
       case Car:
