@@ -120,6 +120,14 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         regs[uX(i)] = v;
         break;
       }  
+      case LessThan:
+      {
+        Number_T num1 = AS_NUMBER(vm, regs[uY(i)]);
+        Number_T num2 = AS_NUMBER(vm, regs[uZ(i)]);
+        Value v = mkBooleanValue(num1 < num2);
+        regs[uX(i)] = v;
+        break;
+      }  
       case Equal:
       {
         bool b = eqvalue(regs[uY(i)], regs[uZ(i)]);
