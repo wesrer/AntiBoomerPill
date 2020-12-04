@@ -1,9 +1,10 @@
+(val N 0)
 
-(define tak (x y z)
-(if (not (< y x))
+(define tak (x y z b)
+(if (and (not (< y x)) (= b 0))
     z
-    (tak (tak (- 1 x) y z) (tak (- 1 y) z x) (tak (- 1 z) x y))
+    (tak (tak (- 1 x) y z (- b 1)) (tak (- 1 y) z x (- b 1)) (tak (- 1 z) x y (- b 1)) (- b 1))
 ))
 
 
-(print (tak 62 52 54))
+(print (tak 5 4 3 0))

@@ -92,9 +92,22 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         }
       case Not:
       {
-        bool b = AS_BOOLEAN(vm, regs[uX(i)]);
-        print("in not, target boolean is: %v", regs[uX(i)]);
+        bool b = AS_BOOLEAN(vm, regs[uY(i)]);
         regs[uX(i)] = mkBooleanValue(!b);
+        break;
+      }
+      case Or:
+      {
+        bool a = AS_BOOLEAN(vm, regs[uY(i)]);
+        bool b = AS_BOOLEAN(vm, regs[uZ(i)]);
+        regs[uX(i)] = mkBooleanValue(a || b);
+        break;
+      }
+      case And:
+      {
+        bool a = AS_BOOLEAN(vm, regs[uY(i)]);
+        bool b = AS_BOOLEAN(vm, regs[uZ(i)]);
+        regs[uX(i)] = mkBooleanValue(a && b);
         break;
       }
       case LoadLiteral:

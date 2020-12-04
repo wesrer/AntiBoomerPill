@@ -174,7 +174,6 @@ eR1 "print" <$> reg : instruction producer *)
 
    <|> the "print" >> eR1 "print" <$> reg
 
-   <|> the "not" >> eR1 "not" <$> reg
    <|> the "zero" >> eR1 "zero" <$> reg
    <|> the "makeconscell" >> eR1 "makeconscell" <$> reg
    <|> the "projectbool" >> eR1 "projectbool" <$> reg
@@ -198,14 +197,21 @@ eR1 "print" <$> reg : instruction producer *)
    <|> eR2 "null?" <$> reg <~> the ":=" <~> the "null?" <*> reg 
    <|> eR2 "nil?" <$> reg <~> the ":=" <~> the "nil?" <*> reg 
 
+
+   <|> eR2 "not" <$> reg <~> the ":=" <~> the "not" <*> reg 
+
+
    <|> eR2 "cdr" <$> reg <~> the ":=" <~> the "cdr" <*> reg 
    <|> eR2 "car" <$> reg <~> the ":=" <~> the "car" <*> reg 
    <|> eR2 "hash" <$> reg <~> the ":=" <~> the "hash" <*> reg 
 
    <|> eR3 "cons" <$> reg <~> the ":=" <*> reg <~> the "cons" <*> reg
    <|> eR3 "=" <$> reg <~> the ":=" <*> reg <~> the "=" <*> reg
+    <|> eR3 "<" <$> reg <~> the ":=" <*> reg <~> the "<" <*> reg
    <|> eR3 ">" <$> reg <~> the ":=" <*> reg <~> the ">" <*> reg
-   <|> eR3 "<" <$> reg <~> the ":=" <*> reg <~> the "<" <*> reg
+
+   <|> eR3 "and" <$> reg <~> the ":=" <*> reg <~> the "and" <*> reg
+   <|> eR3 "or" <$> reg <~> the ":=" <*> reg <~> the "or" <*> reg
 
    <|> eR3 "mkclosure" <$> reg <~> the ":=" <~> the "closure" <~> the "[" <*> reg <~> the "," <*> int <~> the "]"
    <|> eR3 "getclslot" <$> reg <~> the ":=" <*> reg <~> the "." <*> int
@@ -299,8 +305,6 @@ val parse =
             spaceSep ["return", reg x]
     | unparse1 (A.OBJECT_CODE (O.REGS ("halt", []))) = 
             "halt"
-    | unparse1 (A.OBJECT_CODE (O.REGS ("not", [x]))) = 
-            spaceSep ["not", reg x]
     | unparse1 (A.OBJECT_CODE (O.REGS ("zero", [x]))) = 
             spaceSep ["zero", reg x]
     | unparse1 (A.OBJECT_CODE (O.REGS ("makeconscell", [x]))) = 
@@ -335,6 +339,8 @@ val parse =
             spaceSep [reg x, ":=", "function?", reg y]
     | unparse1 (A.OBJECT_CODE (O.REGS ("pair?", [x, y]))) =
             spaceSep [reg x, ":=", "pair?", reg y]
+    | unparse1 (A.OBJECT_CODE (O.REGS ("not", [x, y]))) =
+            spaceSep [reg x, ":=", "not", reg y]
    | unparse1 (A.OBJECT_CODE (O.REGS ("symbol?", [x, y]))) =
             spaceSep [reg x, ":=", "symbol?", reg y]
    | unparse1 (A.OBJECT_CODE (O.REGS ("number?", [x, y]))) =
@@ -351,14 +357,16 @@ val parse =
             spaceSep [reg x, ":=", "car", reg y]
    | unparse1 (A.OBJECT_CODE (O.REGS ("hash", [x, y]))) =
             spaceSep [reg x, ":=", "hash", reg y]
-
     | unparse1 (A.OBJECT_CODE (O.REGINT ("mkclosure", x, y, k))) =
             spaceSep [reg x, ":=", "closure", "[", reg y, ",", Int.toString k, "]"]
     | unparse1 (A.OBJECT_CODE (O.REGINT ("getclslot", x, y, k))) =
             spaceSep [reg x, ":=", reg y, ".", Int.toString k]
     | unparse1 (A.OBJECT_CODE (O.REGINT ("setclslot", x, y, k))) =
             spaceSep [reg x, ".", Int.toString k, ":=", reg y]
-
+    | unparse1 (A.OBJECT_CODE (O.REGS ("and", [x, y, z]))) =
+            spaceSep [reg x, ":=", reg y, "and", reg z]
+    | unparse1 (A.OBJECT_CODE (O.REGS ("or", [x, y, z]))) =
+            spaceSep [reg x, ":=", reg y, "or", reg z]
     | unparse1 (A.OBJECT_CODE (O.REGS ("cons", [x, y, z]))) =
             spaceSep [reg x, ":=", reg y, "cons", reg z]
    | unparse1 (A.OBJECT_CODE (O.REGS ("=", [x, y, z]))) =
