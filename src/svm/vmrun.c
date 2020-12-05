@@ -53,7 +53,6 @@ void vmrun(VMState vm, struct VMFunction *fun) {
     if (dump_decode)
       idump(stderr, vm, cip, i, vm->window, &RX, &RY, &RZ);
 
-
     switch(opcode(i)) {
       case If:
       {
@@ -217,8 +216,8 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         int lastarg = uZ(i);
         int funreg = uY(i);
         int destreg = uX(i);
-        if (gc_needed)
-          GC();
+        // if (gc_needed)
+        //   GC();
         struct Activation a;
         a.start_window = funreg;
         a.end_window = lastarg;

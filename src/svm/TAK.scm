@@ -7,4 +7,4 @@
 ))
 
 
-(print (tak 5 4 3 0))
+(print (tak 5 4 3 2))

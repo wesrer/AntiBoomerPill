@@ -111,14 +111,14 @@ struct
   val plus         = SETS_REGISTER { name = "+",            arity = 2 }
   val subtract     = SETS_REGISTER { name = "-",            arity = 2 }
   val floatdiv     = SETS_REGISTER { name = "//",            arity = 2 }
-  val idiv        = SETS_REGISTER { name = "/",            arity = 2 }
+  val idiv         = SETS_REGISTER { name = "/",            arity = 2 }
 
   val multiply     = SETS_REGISTER { name = "*",            arity = 2 }
   val lessthan     = SETS_REGISTER { name = "<",            arity = 2 }
-  val greaterthan     = SETS_REGISTER { name = ">",            arity = 2 }
-  val not     = SETS_REGISTER { name = "not",            arity = 1 }
-  val p_and     = SETS_REGISTER { name = "and",            arity = 2 }
-  val or     = SETS_REGISTER { name = "or",            arity = 2 }
+  val greaterthan  = SETS_REGISTER { name = ">",            arity = 2 }
+  val not          = SETS_REGISTER { name = "not",            arity = 1 }
+  val p_and        = SETS_REGISTER { name = "and",            arity = 2 }
+  val or           = SETS_REGISTER { name = "or",            arity = 2 }
 
   val makeconscell = SETS_REGISTER { name = "makeconscell",  arity = 1 }
   val projectbool = SETS_REGISTER { name = "projectbool",  arity = 1 }
