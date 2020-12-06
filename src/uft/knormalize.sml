@@ -76,13 +76,12 @@ struct
   fun funcode (formals, x) env =
       let 
         val (env', reg_set') = List.foldl (fn (x, (bindings, A)) => (Env.bind (x, smallest A, bindings), A -- (smallest A)) ) env formals
-        val consec_regs = List.map (fn n => Env.find (n, env')) formals
+        (* val consec_regs = List.map (fn n => Env.find (n, env')) formals *)
+        val consec_regs = List.tabulate (List.length formals, (fn x => x + 1))
         (* val funcode = K.FUNCODE (consec_regs, exp env' reg_set' x) *)
       in 
         (consec_regs, exp env' reg_set' x)
       end
-
-    
 
   and exp rho A e =
     let val exp : reg Env.env -> regset -> ClosedScheme.exp -> exp = exp
