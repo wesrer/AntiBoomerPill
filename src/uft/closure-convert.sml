@@ -39,25 +39,18 @@ struct
        of the free variables of that expression, return the closure-
        converted version of the expression in Closed Scheme *)
     let val _ = closeExp : X.name list -> X.exp -> C.exp
-
-        (* I recommend internal function closure : X.lambda -> C.closure *)
         fun closure (xs, body) =
           let
-            val free_names = S.diff (free body, S.ofList xs)
-            val free_names_list = S.elems (free_names)
-            (* val _ = app print ["Closure converting ",
-                      WppScheme.expString (VScheme.LAMBDA (xs, VScheme.VAR "...")),
-                      " with free names ", String.concatWith " " free_names_list, "\n"] *)
-            val capturedExps = closeExp captured
-            val free_expressions = map (capturedExps o X.LOCAL) free_names_list
+            val captured_names = S.diff (free body, S.ofList xs)
+            val captured_names_list = S.elems (captured_names)
+            val captured_expressions = map (closeExp captured o X.LOCAL) captured_names_list
 
           in
-            ((xs, closeExp free_names_list body), free_expressions)
+            ((xs, closeExp captured_names_list body), captured_expressions)
           end
 
         val _ = closure : X.lambda -> C.closure
 
-        (* I recommend internal function exp : X.exp -> C.exp *)
         fun exp (X.LITERAL v) = C.LITERAL (literal v)
           | exp (X.LOCAL n) =
             (case (indexOf n captured) of
@@ -96,10 +89,10 @@ struct
     | free (X.PRIMCALL (p, es)) = S.union' (map free es)
     | free (X.LETX (X.LET, bindings, e)) =
       let val (names, exps) = ListPair.unzip bindings
-          val free_exps = map free exps
+          val free_exps = S.union' (map free exps)
           val free_body = S.diff (free e, S.ofList names)
       in
-        S.union' (free_body :: free_exps)
+        S.union' [free_body, free_exps]
       end
     | free (X.LETX (X.LETREC, bindings, e)) =
       let val (names, exps) = ListPair.unzip bindings
@@ -109,7 +102,7 @@ struct
       in
         S.union' [free_body, name_diff]
       end
-    | free (X.LAMBDA (names, exp)) = S.union' [S.diff (free exp, S.ofList names)]
+    | free (X.LAMBDA (names, exp)) = S.diff (free exp, S.ofList names)
 
   val _ = free : X.exp -> X.name S.set
 

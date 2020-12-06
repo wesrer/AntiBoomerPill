@@ -73,15 +73,13 @@ struct
 
   fun snd (_, c) = c
 
-  fun funcode (formals, x) env =
-      let 
-        val (env', reg_set') = List.foldl (fn (x, (bindings, A)) => (Env.bind (x, smallest A, bindings), A -- (smallest A)) ) env formals
-        (* val consec_regs = List.map (fn n => Env.find (n, env')) formals *)
-        val consec_regs = List.tabulate (List.length formals, (fn x => x + 1))
-        (* val funcode = K.FUNCODE (consec_regs, exp env' reg_set' x) *)
+  fun funcode (formals, x) e =
+      let
+        val conseq_regs = List.tabulate (List.length formals, (fn x => x + 1)) 
+        val env' = ListPair.foldlEq Env.bind e (formals, conseq_regs)
+        val reg_set' = RS (List.length conseq_regs + 1)
       in 
-        (consec_regs, exp env' reg_set' x)
-      end
+        (conseq_regs, exp env' reg_set' x)
 
   and exp rho A e =
     let val exp : reg Env.env -> regset -> ClosedScheme.exp -> exp = exp
@@ -92,14 +90,6 @@ struct
       fun removeRegisters reg_set [] = reg_set
         | removeRegisters reg_set (x::xs) = removeRegisters (reg_set -- x) xs
       fun bind_rho rs names = ListPair.foldl (fn (n, r, env) => Env.bind (n, r, env)) rho (names, rs)
-      (* fun funcode (nl, e) =  
-              let
-                fun collate (n, (rho, A)) = (E.bind (n, smallest A, rho), A -- (smallest A))
-                val (rho', A') = List.foldl collate (rho, RS 0) ("zero"::nl)
-                val body = exp rho' A' e
-                val ls = List.tabulate (List.length nl, (fn x => x + 1))
-              in (ls, body)
-              end *)
     in  
         case e of 
           F.LITERAL v => K.LITERAL v
@@ -120,11 +110,11 @@ struct
                                                               exp rho' (removeRegisters A rs) e1
                                                             end)
                               end    
-        | F.CLOSURE ((formals, e), []) => K.CLOSURE (funcode (formals, e) (rho, RS 0), [])
+        | F.CLOSURE ((formals, e), []) => K.CLOSURE (funcode (formals, e) Env.empty, [])
         | F.CLOSURE ((formals, e), captured) => nbRegs bindAnyReg A captured
-                                                (fn rs =>  K.CLOSURE (funcode (formals, e) (rho, RS 0), rs))
-        | F.LETREC (bindings, body) => 
-              let 
+                                               (fn rs =>  K.CLOSURE (funcode (formals, e) Env.empty, rs))
+        | F.LETREC (bindings, body) => Impossible.impossible "sadface"
+              (*let 
                 fun fr len = List.tabulate (len, (fn i => i + (smallest A)))
                 val (names, closures) = ListPair.unzip bindings
                 val ts = fr (List.length bindings)
@@ -137,7 +127,7 @@ struct
                       K.LETREC (ListPair.zipEq (ts, cs), exp rho' A' body))
               in
                 map' closure closures cont 
-              end
+              end *)
         | F.CAPTURED i => K.CAPTURED i
 
     end
@@ -156,14 +146,13 @@ struct
       let val env = Env.empty
         val reg_set = (RS 0)
         fun get_consecutive_regs c n = if (c = 0) then [] else c :: (get_consecutive_regs (c - 1) n)
-
       in 
         case e of
           F.EXP x => exp env reg_set x
         | F.CHECK_EXPECT (s1, e1, s2, e2) => K.SEQ ((helper e1 P.check (ObjectCode.STRING s1) reg_set env), (helper e2 P.expect (ObjectCode.STRING s2) reg_set env))
         | F.CHECK_ASSERT (s, x) => (helper x P.check_assert (ObjectCode.STRING s) reg_set env)
         | F.VAL (name, x) => exp env reg_set (F.SETGLOBAL (name, x))
-        | F.DEFINE (fun_name, (formals, x)) => let val fun_env = (Env.bind (fun_name, 0, env), RS 1)
+        | F.DEFINE (fun_name, (formals, x)) => let val fun_env = Env.bind (fun_name, 0, env)
                                                   in
                                                     K.LET (0, K.FUNCODE (funcode (formals, x) fun_env), KNormalUtil.setglobal (fun_name, 0))
                                                   end
