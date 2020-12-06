@@ -1,0 +1,26 @@
+(let ([$r0 (lambda ($r1) 
+              (cons 
+                 (lambda ($closure $r1) 
+                    (let ([$r3 (CAPTURED-IN 0 $closure)]) 
+                      (cons 
+                         (lambda ($closure $r2) 
+                            (let* ([$r3 (CAPTURED-IN 1 $closure)]
+                                   [$r4 (let ([$r5 (CAPTURED-IN 
+                                                      0 
+                                                      $closure)]) 
+                                          (+ $r2 $r5))]) 
+                              (+ $r3 $r4))) 
+                         (cons $r1 (cons $r3 '()))))) 
+                 (cons $r1 '())))]) 
+  (set test $r0))
+(begin 
+   (let ([$r0 (let* ([$r0 (let* ([$r0 (let* ([$r0 test]
+                                             [$r1 3]) 
+                                        ($r0 $r1))]
+                                 [$r1 4]) 
+                            ($r0 $r1))]
+                     [$r1 5]) 
+                ($r0 $r1))]) 
+     (check $r0 '(((test 3) 4) 5))) 
+   (let ([$r0 12]) 
+     (expect $r0 '12)))
