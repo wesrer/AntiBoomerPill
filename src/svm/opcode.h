@@ -45,6 +45,7 @@ typedef enum opcode {
                       Cons,
                       Hash,
                       Equal,
+                      NotEqual,
                       LessThan,
                       GreaterThan,
                       Error,

@@ -1,0 +1,5 @@
+things that dont work:
+
+1. record
+2. letrec
+3. pair?

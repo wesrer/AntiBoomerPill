@@ -52,7 +52,7 @@ struct
   (* Pure, register-setting primitives grouped by arity.  You can extend these lists *)
   (* TODO: change so zero is a binary op *)
 
-  val binary  = [ "+", "-", "*", "/", "<", ">", "cons", "=", "idiv", "zero" ]
+  val binary  = [ "+", "-", "*", "/", "=", "!=", "<", ">", "cons", "idiv", "zero" ]
   val unary   = [ "boolean?", "null?", "number?", "pair?", "function?", "nil?",
                 "symbol?", "car", "cdr", "hash", "not", "and", "or"]
 
@@ -112,6 +112,8 @@ struct
   val subtract     = SETS_REGISTER { name = "-",            arity = 2 }
   val floatdiv     = SETS_REGISTER { name = "//",            arity = 2 }
   val idiv         = SETS_REGISTER { name = "/",            arity = 2 }
+  val equals         = SETS_REGISTER { name = "=",            arity = 2 }
+  val notequals         = SETS_REGISTER { name = "!=",            arity = 2 }
 
   val multiply     = SETS_REGISTER { name = "*",            arity = 2 }
   val lessthan     = SETS_REGISTER { name = "<",            arity = 2 }

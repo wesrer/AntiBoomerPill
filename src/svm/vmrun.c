@@ -37,21 +37,21 @@ void vmrun(VMState vm, struct VMFunction *fun) {
   //cached instruction pointer
   int cip = 0;
   //cached register ptr
-  const char *dump_decode = svmdebug_value("decode");
-  const char *dump_call   = svmdebug_value("call");
-  (void) dump_call;  // make it OK not to use `dump_call`
+  // const char *dump_decode = svmdebug_value("decode");
+  // const char *dump_call   = svmdebug_value("call");
+  // (void) dump_call;  // make it OK not to use `dump_call`
   vm->current_fun = fun;
 
   while (true) {
     Value* regs = vm->registers + vm->window;
     Instruction i = fun->instructions[cip];
-    Value RX = regs[uX(i)];
-    Value RY = regs[uY(i)];
-    Value RZ = regs[uZ(i)];
-    vm->current_fun = fun;
+    // Value RX = regs[uX(i)];
+    // Value RY = regs[uY(i)];
+    // Value RZ = regs[uZ(i)];
+    // vm->current_fun = fun;
 
-    if (dump_decode)
-      idump(stderr, vm, cip, i, vm->window, &RX, &RY, &RZ);
+    // if (dump_decode)
+    //   idump(stderr, vm, cip, i, vm->window, &RX, &RY, &RZ);
 
     switch(opcode(i)) {
       case If:
@@ -145,7 +145,13 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         bool b = eqvalue(regs[uY(i)], regs[uZ(i)]);
         regs[uX(i)] = mkBooleanValue(b);
         break;
-      }      
+      }   
+      case NotEqual:
+      {
+        bool b = eqvalue(regs[uY(i)], regs[uZ(i)]);
+        regs[uX(i)] = mkBooleanValue(!b);
+        break;
+      }   
       case Zero: 
       {
         regs[uX(i)] = mkNumberValue(0);
@@ -216,8 +222,8 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         int lastarg = uZ(i);
         int funreg = uY(i);
         int destreg = uX(i);
-        // if (gc_needed)
-        //   GC();
+        if (gc_needed)
+          GC();
         struct Activation a;
         a.start_window = funreg;
         a.end_window = lastarg;
@@ -227,7 +233,6 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         if (vm->callstack_size >= vm->callstack_length)
           runerror(vm, "Stack overflow!");
         vm->callstack[vm->callstack_size] = a;
-
 
         vm->callstack_size++;
         vm->window += a.start_window; //shift the window
@@ -243,7 +248,6 @@ void vmrun(VMState vm, struct VMFunction *fun) {
             runerror(vm, "Function arity and arguments mismatched ");
         if (fun->nregs >= 255)
           runerror(vm, "Register file overflowed");
-
         cip = 0;
         continue;
       }
@@ -309,6 +313,11 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       case Function_Observer:
       {
         regs[uX(i)] = mkBooleanValue(isFunction(regs[uY(i)]));
+        break;
+      }
+      case Pair_Observer:
+      {
+        regs[uX(i)] = mkBooleanValue(isPair(regs[uY(i)]));
         break;
       }
       case Nil_Observer:

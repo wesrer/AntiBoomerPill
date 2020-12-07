@@ -224,7 +224,7 @@ static inline bool asBoolean_(VMState vm, Value v, const char *file, int line) {
     else if (tag == String)
       return AS_CSTRING(vm, mkStringValue(v.s)) == AS_CSTRING(vm, mkStringValue(Vmstring_newc("")));
     else if (tag == Emptylist)
-      return false;
+      return true;
     else if (tag == ConsCell)
       return true;
     else if (tag == Block)
@@ -307,6 +307,15 @@ static inline bool isBoolean(Value v) {
 static inline bool isNumber(Value v) {
   return v.tag == Number;
 }
+
+static inline bool isPair(Value v) {
+  if (v.tag != Block)
+    return false;
+  else if (v.block->slots[1].tag == Block)
+    return false;
+  return true;
+}
+
 static inline Value mkTableValue(struct VTable_T *t) {
   Value val;
   val.tag = Table;

@@ -80,6 +80,7 @@ struct
         val reg_set' = RS (List.length conseq_regs + 1)
       in 
         (conseq_regs, exp env' reg_set' x)
+      end
 
   and exp rho A e =
     let val exp : reg Env.env -> regset -> ClosedScheme.exp -> exp = exp

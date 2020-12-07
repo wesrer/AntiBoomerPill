@@ -162,10 +162,9 @@ eR1 "print" <$> reg : instruction producer *)
     <|> eR3 "+" <$> reg <~> the ":=" <*> reg <~> the "+" <*> reg
     <|> eR3 "-" <$> reg <~> the ":=" <*> reg <~> the "-" <*> reg
    <|> eR3 "/" <$> reg <~> the ":=" <*> reg <~> the "/" <*> reg
-   <|> eR3 "//" <$> reg <~> the ":=" <*> reg <~> the "//" <*> reg
+   <|> eR3 "//" <$> reg <~> the ":=" <*> reg <~> the "/" <~> the "/" <*> reg
 
    <|> eR3 "*" <$> reg <~> the ":=" <*> reg <~> the "*" <*> reg
-    <|> eR3 "=" <$> reg <~> the ":=" <*> reg <~> the "=" <*> reg
 
     <|> eR3 "call" <$> reg <~> the ":=" <~> the "call" <*> reg <~> the "(" <~> reg <~> the "," <~> the "..." <~> the "," <*> reg <~> the ")"
 
@@ -207,8 +206,9 @@ eR1 "print" <$> reg : instruction producer *)
 
    <|> eR3 "cons" <$> reg <~> the ":=" <*> reg <~> the "cons" <*> reg
    <|> eR3 "=" <$> reg <~> the ":=" <*> reg <~> the "=" <*> reg
-    <|> eR3 "<" <$> reg <~> the ":=" <*> reg <~> the "<" <*> reg
+   <|> eR3 "<" <$> reg <~> the ":=" <*> reg <~> the "<" <*> reg
    <|> eR3 ">" <$> reg <~> the ":=" <*> reg <~> the ">" <*> reg
+   <|> eR3 "!=" <$> reg <~> the ":=" <*> reg <~> the "!" <~> the "=" <*> reg
 
    <|> eR3 "and" <$> reg <~> the ":=" <*> reg <~> the "and" <*> reg
    <|> eR3 "or" <$> reg <~> the ":=" <*> reg <~> the "or" <*> reg
@@ -371,6 +371,8 @@ val parse =
             spaceSep [reg x, ":=", reg y, "cons", reg z]
    | unparse1 (A.OBJECT_CODE (O.REGS ("=", [x, y, z]))) =
             spaceSep [reg x, ":=", reg y, "=", reg z]
+   | unparse1 (A.OBJECT_CODE (O.REGS ("!=", [x, y, z]))) =
+            spaceSep [reg x, ":=", reg y, "!=", reg z]
    | unparse1 (A.OBJECT_CODE (O.REGS (">", [x, y, z]))) =
             spaceSep [reg x, ":=", reg y, ">", reg z]
    | unparse1 (A.OBJECT_CODE (O.REGS ("<", [x, y, z]))) =
@@ -396,8 +398,12 @@ val parse =
                *)
 fun unparse [] = []
 | unparse (A.OBJECT_CODE (O.LOADFUNC (r, k, instr)) :: ks) = [spaceSep [reg r, ":=", "function", int k, String.concat ["{",String.concat ( map (fn i => unparse1 (A.OBJECT_CODE i)) instr), "}"]]] @ unparse ks 
-| unparse (A.LOADFUNC (r, k, instr) :: ks) = [spaceSep [reg r, ":=", "function", int k, String.concat ["{", String.concat (unparse instr), "}"]]] @ unparse ks
-| unparse (l :: ls) = [String.concat [unparse1 l, "\n"]] @ unparse ls
+| unparse (A.LOADFUNC (r, k, instr) :: ks) = 
+        [spaceSep [reg r, ":=", "function", int k, "{"]]
+                @ map (fn x => "  " ^ x) (unparse instr) 
+                @  ["}"]
+                @ unparse ks
+| unparse (l :: ls) = [String.concat [unparse1 l]] @ unparse ls
 
 
 end

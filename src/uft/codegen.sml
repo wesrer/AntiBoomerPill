@@ -158,7 +158,6 @@ and toReg' (dest : reg) (e : reg KNormalForm.exp) : instruction hughes_list =
                 | K.SEQ (e1, e2) => (forEffect' e1) o (return e2)
                 | K.LET (n, e1, e2) => (toReg' n e1) o (return e2)
                 (* | K.LETREC (closure_names, e) => letrec return (closure_names, e)*)
-                | K.CLOSURE ((xs, e), captured) =>(toReg' 0 (K.CLOSURE((xs, e), captured))) o (S (A.return (List.length xs)))
                 | x => (toReg' 0 x) o (S (A.return 0)))
 
   val _ = forEffect' :        reg KNormalForm.exp -> instruction hughes_list

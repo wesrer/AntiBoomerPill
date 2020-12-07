@@ -34,7 +34,7 @@ instruction_info instructions[] = {
   { "getglobal", GetGlobal, parseR1LIT, "getglobal $rX LIT" },
   { "makeconscell", MakeConsCell, parseR1, "makeconscell $rX"},
   { "projectbool", ProjectBool, parseR1, "projectbool $rX"},
-  { "goto", GoTo, parseR0I24, "goto LIT"},
+  { "goto", GoTo, parseR0I24, "goto iXYZ"},
 
   { "function?", Function_Observer, parseR2, "$rX := function? $rY" },
   { "pair?", Pair_Observer, parseR2, "$rX := pair? $rY" },
@@ -51,6 +51,7 @@ instruction_info instructions[] = {
 
   { "cons", Cons, parseR3, "$rX := $rY cons $rZ" },
   { "=", Equal, parseR3, "$rX := $rY = $rZ" },
+  { "!=", NotEqual, parseR3, "$rX := $rY != $rZ" },
   { ">", GreaterThan, parseR3, "$rX := $rY > $rZ" },
   { "<", LessThan, parseR3, "$rX := $rY < $rZ" },
   { "and", And, parseR3, "$rX := $rY and $rZ" },

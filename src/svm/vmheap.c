@@ -853,7 +853,7 @@ void xsearch(const char *what, void *p) {
 
 
 static double target_gamma(VTable_T globals) {
-  double gamma = 2.1; // very conservative default
+  double gamma = 4.0; // very conservative default
   Value vmgamma = VTable_get(globals, mkStringValue(Vmstring_newc("&gamma")));
   if (vmgamma.tag == Number) {
     gamma = vmgamma.n;

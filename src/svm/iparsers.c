@@ -131,12 +131,11 @@ static Value get_literal(Tokens *litp, const char *input) {
       
     case TU32:
       {      
-        uint32_t num = tokens_get_int(rest, input);
+        int32_t num = tokens_get_signed_number(rest, input);
         return mkNumberValue((double) num);
       }
     case TDOUBLE:
       {      
-        printf("in tdouble\n");
         double num = tokens_get_signed_number(rest, input);
         return mkNumberValue(num);
       }
