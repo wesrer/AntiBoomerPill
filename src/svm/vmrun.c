@@ -39,6 +39,7 @@ void vmrun(VMState vm, struct VMFunction *fun) {
   //cached register ptr
   // const char *dump_decode = svmdebug_value("decode");
   // const char *dump_call   = svmdebug_value("call");
+
   //(void) dump_call;  // make it OK not to use `dump_call`
   vm->current_fun = fun;
 
@@ -147,7 +148,13 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         bool b = eqvalue(regs[uY(i)], regs[uZ(i)]);
         regs[uX(i)] = mkBooleanValue(b);
         break;
-      }      
+      }   
+      case NotEqual:
+      {
+        bool b = eqvalue(regs[uY(i)], regs[uZ(i)]);
+        regs[uX(i)] = mkBooleanValue(!b);
+        break;
+      }   
       case Zero: 
       {
         regs[uX(i)] = mkNumberValue(0);
@@ -220,7 +227,7 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         int destreg = uX(i);
 
         if (gc_needed)
-           GC();
+          GC();
 
         struct Activation a;
         a.start_window = funreg;
@@ -248,7 +255,6 @@ void vmrun(VMState vm, struct VMFunction *fun) {
             runerror(vm, "Function arity and arguments mismatched ");
         if (fun->nregs >= 255)
           runerror(vm, "Register file overflowed");
-
         cip = 0;
         continue;
       }
@@ -315,6 +321,11 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       case Function_Observer:
       {
         regs[uX(i)] = mkBooleanValue(isFunction(regs[uY(i)]));
+        break;
+      }
+      case Pair_Observer:
+      {
+        regs[uX(i)] = mkBooleanValue(isPair(regs[uY(i)]));
         break;
       }
       case Nil_Observer:

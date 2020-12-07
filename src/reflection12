@@ -1,0 +1,19 @@
+14. 
+We chose a gamma of 4.0 because it achieved a sweet spot in the tradeoff
+between space and time. Using a more conservative gamma, we were able
+to use very little space, but the time was 2.58s. By changing our gamma to
+4.0, we were able to get close enough to our best time without an enormous
+increase in space that comes with using a larger gamma.
+
+  Our trials are as follows:
+Gamma   Space  (b)  Time (s)    Decrease in Time   Increase in Space
+2.2     1,120,000   2.58          0.0                0
+3.0     1,365,000   2.48        - 0.1              + 245,000
+3.4     1,365,000   2.49        - 0.09             + 245,000
+3.7     1,365,000   2.47        - 0.11             + 245,000
+4.0     1,820,000   2.37        - 0.21             + 700,000
+5.0     2,275,000   2.30        - 0.28             + 1,115,000
+6.0     2,940,000   2.26        - 0.32             + 1,820,000
+10.0    4,550,000   2.24        - 0.34             + 3,430,000
+
+We went from 22.35 to 16.57
