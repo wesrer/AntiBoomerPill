@@ -17,17 +17,10 @@ typedef struct VMState {
     //Intstruction Pointer
     int ip;
 
-    // //Instructions
-	  // Instruction* instructions;
-
-    // struct VMFunction* instructions;
-
-    // //Registers
+    //Registers
     Value* registers;
 
-    // int highest_reg;
-
-    // //Literal Pool
+    //Literal Pool
     Value* literal_pool;
 
     struct VMFunction *current_fun;
