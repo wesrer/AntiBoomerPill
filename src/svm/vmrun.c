@@ -42,19 +42,20 @@ void vmrun(VMState vm, struct VMFunction *fun) {
   // const char *dump_decode = svmdebug_value("decode");
   // const char *dump_call   = svmdebug_value("call");
 
-  //(void) dump_call;  // make it OK not to use `dump_call`
+  // (void) dump_call;  // make it OK not to use `dump_call`
   vm->current_fun = fun;
+  Value* regs = vm->registers;
 
   while (true) {
-    Value* regs = vm->registers + vm->window;
+    regs = vm->registers + vm->window;
     Instruction i = fun->instructions[cip];
-    Value RX = regs[uX(i)];
-    Value RY = regs[uY(i)];
-    Value RZ = regs[uZ(i)];
-    vm->current_fun = fun;
+    // Value RX = regs[uX(i)];
+    // Value RY = regs[uY(i)];
+    // Value RZ = regs[uZ(i)];
+    // vm->current_fun = fun;
 
-    if (dump_decode)
-      idump(stderr, vm, cip, i, vm->window, &RX, &RY, &RZ);
+    // if (dump_decode)
+    //   idump(stderr, vm, cip, i, vm->window, &RX, &RY, &RZ);
 
     switch(opcode(i)) {
 
@@ -77,7 +78,8 @@ void vmrun(VMState vm, struct VMFunction *fun) {
 
       case Print:
         {
-          Value v = regs[uX(i)];
+        Value v = regs[uX(i)];
+        print("%v\n", v);        
         break; 
         }
 
@@ -142,6 +144,22 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         Number_T num1 = AS_NUMBER(vm, regs[uY(i)]);
         Number_T num2 = AS_NUMBER(vm, regs[uZ(i)]);
         Value v = mkBooleanValue(num1 < num2);
+        regs[uX(i)] = v;
+        break;
+      } 
+      case GreaterThanEqualTo:
+      {
+        Number_T num1 = AS_NUMBER(vm, regs[uY(i)]);
+        Number_T num2 = AS_NUMBER(vm, regs[uZ(i)]);
+        Value v = mkBooleanValue(num1 >= num2);
+        regs[uX(i)] = v;
+        break;
+      }  
+      case LessThanEqualTo:
+      {
+        Number_T num1 = AS_NUMBER(vm, regs[uY(i)]);
+        Number_T num2 = AS_NUMBER(vm, regs[uZ(i)]);
+        Value v = mkBooleanValue(num1 <= num2);
         regs[uX(i)] = v;
         break;
       }  
@@ -238,7 +256,7 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         a.fun = fun;
         a.pc = cip;
 
-	uint32_t callstack_size = vm->callstack_size++;
+	      int32_t callstack_size = vm->callstack_size++;
 
         if (callstack_size >= vm->callstack_length)
           runerror(vm, "Stack overflow!");

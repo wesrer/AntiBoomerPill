@@ -52,9 +52,9 @@ struct
   (* Pure, register-setting primitives grouped by arity.  You can extend these lists *)
   (* TODO: change so zero is a binary op *)
 
-  val binary  = [ "+", "-", "*", "/", "=", "!=", "<", ">", "cons", "idiv", "zero" ]
-  val unary   = [ "boolean?", "null?", "number?", "pair?", "function?", "nil?",
-                "symbol?", "car", "cdr", "hash", "not", "and", "or"]
+  val binary  = [ "+", "-", "*", "/", "=", "!=", "<", ">", ">=", "<", "cons", "idiv", "zero","and", "or" ]
+  val unary   = [ "!", "not", "boolean?", "null?", "number?", "pair?", "function?", "nil?",
+                "symbol?", "car", "cdr", "hash"]
 
 
   (* Three different groups of side-effecting primitives.  To the compiler,
@@ -114,11 +114,14 @@ struct
   val idiv         = SETS_REGISTER { name = "/",            arity = 2 }
   val equals         = SETS_REGISTER { name = "=",            arity = 2 }
   val notequals         = SETS_REGISTER { name = "!=",            arity = 2 }
+  val not          = SETS_REGISTER { name = "!",            arity = 1 }
+  val not_2          = SETS_REGISTER { name = "not",            arity = 1 }
 
   val multiply     = SETS_REGISTER { name = "*",            arity = 2 }
   val lessthan     = SETS_REGISTER { name = "<",            arity = 2 }
   val greaterthan  = SETS_REGISTER { name = ">",            arity = 2 }
-  val not          = SETS_REGISTER { name = "not",            arity = 1 }
+  val lessthanequalto     = SETS_REGISTER { name = "<=",            arity = 2 }
+  val greaterthanequalto  = SETS_REGISTER { name = ">=",            arity = 2 }
   val p_and        = SETS_REGISTER { name = "and",            arity = 2 }
   val or           = SETS_REGISTER { name = "or",            arity = 2 }
 

@@ -3,3 +3,11 @@ things that dont work:
 1. record
 2. letrec
 3. pair?
+
+One thing we did to make our performance better was 
+to stop caching all the registers at the beginning of
+every instruction decoding. This was unecessary. We were also accessing
+the current_fun member of the vmstate on every decode. By removing these,
+we were able to get 
+
+We went from 22.35 to 16.57

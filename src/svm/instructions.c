@@ -27,6 +27,7 @@ instruction_info instructions[] = {
   { "/", IDiv, parseR3, "$rX := $rY / $rZ" },
   { "//", FloatDiv, parseR3, "$rX := $rY // $rZ" },
   { "*", Multiply, parseR3, "$rX := $rY * $rZ" },
+  { "!", Not, parseR2, "$rX := ! $rY"},
   { "not", Not, parseR2, "$rX := not $rY"},
 
   { "zero", Zero, parseR1, "zero $rX"},
@@ -53,6 +54,9 @@ instruction_info instructions[] = {
   { "=", Equal, parseR3, "$rX := $rY = $rZ" },
   { "!=", NotEqual, parseR3, "$rX := $rY != $rZ" },
   { ">", GreaterThan, parseR3, "$rX := $rY > $rZ" },
+  { ">=", GreaterThanEqualTo, parseR3, "$rX := $rY >= $rZ" },
+  { "<=", LessThanEqualTo, parseR3, "$rX := $rY <= $rZ" },
+
   { "<", LessThan, parseR3, "$rX := $rY < $rZ" },
   { "and", And, parseR3, "$rX := $rY and $rZ" },
   { "or", Or, parseR3, "$rX := $rY or $rZ" },

@@ -48,6 +48,8 @@ typedef enum opcode {
                       NotEqual,
                       LessThan,
                       GreaterThan,
+                      LessThanEqualTo,
+                      GreaterThanEqualTo,
                       Error,
                       Printu,
                       Println,

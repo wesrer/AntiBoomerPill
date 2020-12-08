@@ -42,7 +42,7 @@ Gamma   Space  (b)  Time (s)    Decrease in Time   Increase in Space
 10.0    4,550,000   2.24        - 0.34             + 3,430,000
 
 6. 
- 9 benchmarks run without errors.
+ 12 benchmarks run without errors.
 Our system seems to be slower than others.
 Our hypothesis is that we use a lot of pointer indirection
 and that we need to implement more primitives and that our 
@@ -57,4 +57,7 @@ the current_fun member of the vmstate on every decode. By removing these,
 we were able to get the list_permute benchmark to run in 16.57 seconds instead
 of 22.35.
 
-8. 
+8. We ran erica's takl.scm and it took 3.62 seconds as opposed to our ruby 
+benchmark which took 0.14 seconds. We used arrays in ruby, which
+can be mutated directly, so it makes sense that this would be much faster.
+We will be investigating further as we continue to optimize our vm.

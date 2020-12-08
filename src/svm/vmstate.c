@@ -17,10 +17,10 @@
 
 // constants
 
-#define CALLSTACK_SIZE 50000
-#define REGISTER_SIZE 5000
-#define LITERAL_SIZE 5000
-#define GLOBALS_SIZE 1000
+#define CALLSTACK_SIZE 5000
+#define REGISTER_SIZE 50000
+#define LITERAL_SIZE 2000
+#define GLOBALS_SIZE 5000
 
 
 void freestatep(VMState *sp) {

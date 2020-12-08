@@ -197,8 +197,9 @@ eR1 "print" <$> reg : instruction producer *)
    <|> eR2 "nil?" <$> reg <~> the ":=" <~> the "nil?" <*> reg 
 
 
-   <|> eR2 "not" <$> reg <~> the ":=" <~> the "not" <*> reg 
+   <|> eR2 "!" <$> reg <~> the ":=" <~> the "!" <*> reg 
 
+   <|> eR2 "not" <$> reg <~> the ":=" <~> the "not" <*> reg 
 
    <|> eR2 "cdr" <$> reg <~> the ":=" <~> the "cdr" <*> reg 
    <|> eR2 "car" <$> reg <~> the ":=" <~> the "car" <*> reg 
@@ -208,6 +209,8 @@ eR1 "print" <$> reg : instruction producer *)
    <|> eR3 "=" <$> reg <~> the ":=" <*> reg <~> the "=" <*> reg
    <|> eR3 "<" <$> reg <~> the ":=" <*> reg <~> the "<" <*> reg
    <|> eR3 ">" <$> reg <~> the ":=" <*> reg <~> the ">" <*> reg
+   <|> eR3 "<=" <$> reg <~> the ":=" <*> reg <~> the "<" <*> reg
+   <|> eR3 ">=" <$> reg <~> the ":=" <*> reg <~> the ">" <*> reg
    <|> eR3 "!=" <$> reg <~> the ":=" <*> reg <~> the "!" <~> the "=" <*> reg
 
    <|> eR3 "and" <$> reg <~> the ":=" <*> reg <~> the "and" <*> reg
@@ -339,6 +342,8 @@ val parse =
             spaceSep [reg x, ":=", "function?", reg y]
     | unparse1 (A.OBJECT_CODE (O.REGS ("pair?", [x, y]))) =
             spaceSep [reg x, ":=", "pair?", reg y]
+    | unparse1 (A.OBJECT_CODE (O.REGS ("!", [x, y]))) =
+            spaceSep [reg x, ":=", "!", reg y]
     | unparse1 (A.OBJECT_CODE (O.REGS ("not", [x, y]))) =
             spaceSep [reg x, ":=", "not", reg y]
    | unparse1 (A.OBJECT_CODE (O.REGS ("symbol?", [x, y]))) =
@@ -377,6 +382,10 @@ val parse =
             spaceSep [reg x, ":=", reg y, ">", reg z]
    | unparse1 (A.OBJECT_CODE (O.REGS ("<", [x, y, z]))) =
             spaceSep [reg x, ":=", reg y, "<", reg z]
+   | unparse1 (A.OBJECT_CODE (O.REGS (">=", [x, y, z]))) =
+            spaceSep [reg x, ":=", reg y, ">=", reg z]
+   | unparse1 (A.OBJECT_CODE (O.REGS ("<=", [x, y, z]))) =
+            spaceSep [reg x, ":=", reg y, "<=", reg z]
     | unparse1 (A.OBJECT_CODE (O.REGS ("error", [x]))) =
             spaceSep ["error", reg x]
    | unparse1 (A.OBJECT_CODE (O.REGS ("printu", [x]))) =

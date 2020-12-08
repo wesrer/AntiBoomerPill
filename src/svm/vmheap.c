@@ -605,14 +605,11 @@ static void scan_vmstate(struct VMState *vm) {
     // New bugfix addition
     forward_payload(&vm->checkv);
 
-    for (int i = 0; i < highest_reg; i++)
+    for (int i = 0; i <= highest_reg; i++)
     {
-      // print("%v ", vm->registers[i]);
       forward_payload(&(vm->registers[i]));
     }
-    // print("\n");
-    //set all registers from highest reg to end to 0
-    //change number in div2 to 2 or 3
+    
     // roots: all literal slots that are in use
     for(int i = 0; i < literal_count(vm); i++)
     {

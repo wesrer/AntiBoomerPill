@@ -32,9 +32,7 @@ typedef struct VMState {
     int callstack_length;
 
     int window;
-
-    int full_length;
-
+    
     int num_literals;
 
     //Globals
