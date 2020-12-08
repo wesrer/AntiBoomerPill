@@ -39,9 +39,10 @@ void vmrun(VMState vm, struct VMFunction *fun) {
   //cached instruction pointer
   int cip = 0;
   //cached register ptr
-  const char *dump_decode = svmdebug_value("decode");
-  const char *dump_call   = svmdebug_value("call");
-  (void) dump_call;  // make it OK not to use `dump_call`
+  // const char *dump_decode = svmdebug_value("decode");
+  // const char *dump_call   = svmdebug_value("call");
+
+  //(void) dump_call;  // make it OK not to use `dump_call`
   vm->current_fun = fun;
 
   while (true) {
@@ -56,6 +57,7 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       idump(stderr, vm, cip, i, vm->window, &RX, &RY, &RZ);
 
     switch(opcode(i)) {
+
       case If:
       {
         bool b = AS_BOOLEAN(vm, regs[uX(i)]);
@@ -63,6 +65,7 @@ void vmrun(VMState vm, struct VMFunction *fun) {
             cip ++;
         break;
       }
+
       case GoTo:
       { 
         int32_t jump = iXYZ(i);
@@ -71,12 +74,13 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         cip += jump;
         continue;
       }
+
       case Print:
         {
           Value v = regs[uX(i)];
-          print("%v\n", v);        
         break; 
         }
+
       case Check:
         {
         Value source = regs[uX(i)];
@@ -114,7 +118,6 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       case LoadLiteral:
       {
         Value v = literal_value(vm, uYZ(i));
-        // print("in loadlit: %v\n", v);
         regs[uX(i)] = v;
         break;
       }
@@ -224,19 +227,23 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         int lastarg = uZ(i);
         int funreg = uY(i);
         int destreg = uX(i);
+
         if (gc_needed)
           GC();
+
         struct Activation a;
         a.start_window = funreg;
         a.end_window = lastarg;
         a.dest_reg = destreg;
         a.fun = fun;
         a.pc = cip;
-        if (vm->callstack_size >= vm->callstack_length)
-          runerror(vm, "Stack overflow!");
-        vm->callstack[vm->callstack_size] = a;
 
-        vm->callstack_size++;
+	uint32_t callstack_size = vm->callstack_size++;
+
+        if (callstack_size >= vm->callstack_length)
+          runerror(vm, "Stack overflow!");
+        vm->callstack[callstack_size] = a;
+
         vm->window += a.start_window; //shift the window
 
         Value callee = regs[funreg];
@@ -266,6 +273,7 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         regs[a.dest_reg - a.start_window] = regs[uX(i)];
         vm->callstack_size--;
         cip = a.pc + 1;
+
         vm->window -= a.start_window;
         fun = a.fun;
         continue;
