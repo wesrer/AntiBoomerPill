@@ -1,4 +1,29 @@
-14. 
+1.  We pushed solution.scm, which has functions from 105 implemented. 
+    They test the following:
+      1. allocation of cons cells
+      2. list operations
+      3. use of primitives
+      4. globals
+      They do not test closures.
+  
+2. One benchmark I pushed was TAK.scm, and it tests function calls and arithmetic. I know
+  this because the tak function makes 63,507 function calls, according to the gabriel lisp textbook,
+  and it uses arithmetic primitives. It does not do much else.
+
+3. Production Benchmarks:
+    - derivative.py
+    - takl.py
+    - tak.py
+
+4. 
+  The following are bugs we are aware of/ things we still need to implement
+  1. record not implemented
+  2. letrec not implemented
+  3. pair? and other primitives not implemented
+  4. garbage collection needs to set registers above highest_reg to 0
+  5. we need to track down why div2 (ben london's test) doesn't work
+
+5.
 We chose a gamma of 4.0 because it achieved a sweet spot in the tradeoff
 between space and time. Using a more conservative gamma, we were able
 to use very little space, but the time was 2.58s. By changing our gamma to
@@ -16,4 +41,20 @@ Gamma   Space  (b)  Time (s)    Decrease in Time   Increase in Space
 6.0     2,940,000   2.26        - 0.32             + 1,820,000
 10.0    4,550,000   2.24        - 0.34             + 3,430,000
 
-We went from 22.35 to 16.57
+6. 
+ 9 benchmarks run without errors.
+Our system seems to be slower than others.
+Our hypothesis is that we use a lot of pointer indirection
+and that we need to implement more primitives and that our 
+garbage collector is very slow. We could also static inline 
+some functions in value.h. In the next few days, we plan to use 
+kcachegrind to find the bottlenecks in our system, and fix bugs.
+
+7. One thing we did to make our performance better was 
+to stop caching all the registers at the beginning of
+every instruction decoding. This was unecessary. We were also accessing
+the current_fun member of the vmstate on every decode. By removing these,
+we were able to get the list_permute benchmark to run in 16.57 seconds instead
+of 22.35.
+
+8. 

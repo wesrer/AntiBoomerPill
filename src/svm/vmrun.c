@@ -33,25 +33,27 @@
 #define GC() (VMSAVE(), gc(vm), VMLOAD())
 
 
+//make macro to get register values
+
 void vmrun(VMState vm, struct VMFunction *fun) {
   //cached instruction pointer
   int cip = 0;
   //cached register ptr
-  // const char *dump_decode = svmdebug_value("decode");
-  // const char *dump_call   = svmdebug_value("call");
-  // (void) dump_call;  // make it OK not to use `dump_call`
+  const char *dump_decode = svmdebug_value("decode");
+  const char *dump_call   = svmdebug_value("call");
+  (void) dump_call;  // make it OK not to use `dump_call`
   vm->current_fun = fun;
 
   while (true) {
     Value* regs = vm->registers + vm->window;
     Instruction i = fun->instructions[cip];
-    // Value RX = regs[uX(i)];
-    // Value RY = regs[uY(i)];
-    // Value RZ = regs[uZ(i)];
-    // vm->current_fun = fun;
+    Value RX = regs[uX(i)];
+    Value RY = regs[uY(i)];
+    Value RZ = regs[uZ(i)];
+    vm->current_fun = fun;
 
-    // if (dump_decode)
-    //   idump(stderr, vm, cip, i, vm->window, &RX, &RY, &RZ);
+    if (dump_decode)
+      idump(stderr, vm, cip, i, vm->window, &RX, &RY, &RZ);
 
     switch(opcode(i)) {
       case If:
@@ -273,6 +275,7 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         regs[uX(i)] = regs[uY(i)];
         break;
       }
+      //TODO: wrap in GCVLIDATE
       case TailCall:
       {
         int lastarg = uY(i); //this is rn from the semantics

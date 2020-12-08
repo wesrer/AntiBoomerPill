@@ -20,7 +20,7 @@
 #define CALLSTACK_SIZE 50000
 #define REGISTER_SIZE 5000
 #define LITERAL_SIZE 5000
-#define GLOBALS_SIZE 5000
+#define GLOBALS_SIZE 1000
 
 
 void freestatep(VMState *sp) {
