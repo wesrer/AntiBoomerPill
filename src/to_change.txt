@@ -2,7 +2,14 @@ things that dont work:
 
 1. record
 2. letrec
-3. pair?
+3. primitive used as value
+4. allocfast test?? what
+5. arrays
+6. closure bug
+7. letrec everything
+8. ask abt erica's knormalize test?
+and erica's fotest
+
 
 One thing we did to make our performance better was 
 to stop caching all the registers at the beginning of

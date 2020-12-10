@@ -55,6 +55,6 @@ struct
 
   fun moveToHeap _ = Impossible.exercise "migrate mutable, captured variables to heap"
 
-
+  val detect = Error.OK
 
 end

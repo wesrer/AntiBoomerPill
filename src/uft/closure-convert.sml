@@ -73,7 +73,11 @@ struct
                     in
                       C.LET (ListPair.zip (names, map exp exps), exp e)
                     end
-          | exp (X.LETX (X.LETREC, bindings, e)) = C.LETREC ((map (fn (n, l) => (n, closure(unLambda l))) bindings), exp e)
+          | exp (X.LETX (X.LETREC, bindings, e)) = 
+                  let val rhs =  (fn (n, l) => (n, closure (unLambda l)))
+                  in 
+                     C.LETREC (map rhs bindings, exp e)
+                  end
         in  exp e
     end
 

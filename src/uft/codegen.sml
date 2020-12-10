@@ -47,20 +47,16 @@ struct
     in  go 0 xs
     end
 
-  (* val setclslot : reg ‑> int ‑> reg ‑> instruction *)
-    (* x.k := y *)
-  (* fun setclslot x k closure = i O.REGINT ("setclslot", x, closure, k) *)
-
   fun letrec gen (bindings, body) =
    let val _ = letrec : (reg K.exp -> instruction hughes_list)
                      -> (reg * reg K.closure) list * reg K.exp
                      -> instruction hughes_list
       (* one helper function to allocate and another to initialize *)
       fun alloc (f_i, closure as (funcode as (formals, body), captures)) =
-               toReg' f_i (K.FUNCODE funcode) o 
-               S (A.mkclosure f_i f_i (List.length captures))
+                S (A.loadfunc f_i (List.length formals) ((return body) []))
+              o  S (A.mkclosure f_i f_i (List.length captures))
       fun init  (f_i, closure as (funcode as (formals, body), captures)) = 
-                L (mapi (fn (k, x) => A.setclslot k x f_i) captures)
+                L (mapi (fn (k, x) => A.setclslot f_i x k) captures)
   in  hconcat (map alloc bindings) o hconcat (map init bindings) o gen body
   end
 
@@ -140,13 +136,15 @@ and toReg' (dest : reg) (e : reg KNormalForm.exp) : instruction hughes_list =
                     if (A.areConsecutive (x::xs)) andalso (x = funreg + 1) 
                     then S (A.call x funreg (List.last (x::xs))) 
                     else raise Impossible.impossible "registers in funcall not consecutive"
+                 | K.CAPTURED i => empty
                  | K.FUNCALL (funreg, []) => S (A.call funreg funreg funreg)
-                 (* | K.LETREC (closure_names, e) => letrec forEffect' (closure_names, e) *)
-                 | _ =>  Impossible.unimp "codegen")
+                 | K.CLOSURE _ => empty
+                 | K.LETREC (closure_names, e) => letrec forEffect' (closure_names, e))
 
   and return (e : reg KNormalForm.exp) : instruction hughes_list =
       (case e of 
                 K.NAME x => S (A.return x)
+                | K.FUNCALL (funreg, []) => (S (A.tailcall funreg funreg))
                 | K.FUNCALL (funreg, (x::xs)) => 
                   if (A.areConsecutive (x::xs)) andalso (x = funreg + 1) 
                   then (S (A.tailcall funreg (List.last (x::xs))))
@@ -157,7 +155,11 @@ and toReg' (dest : reg) (e : reg KNormalForm.exp) : instruction hughes_list =
                                             end)
                 | K.SEQ (e1, e2) => (forEffect' e1) o (return e2)
                 | K.LET (n, e1, e2) => (toReg' n e1) o (return e2)
-                (* | K.LETREC (closure_names, e) => letrec return (closure_names, e)*)
+                | K.LETREC (closure_names, e) => letrec return (closure_names, e)
+                (* | K.CLOSURE ((xs, e), captured) =>  
+                              S (A.loadfunc 0 (List.length xs) ((return e) [])) o 
+                              S (A.mkclosure 0 0 (List.length captured)) o 
+                              L (mapi (fn (slot_num, value) => A.setclslot 0 value slot_num) captured) *)
                 | x => (toReg' 0 x) o (S (A.return 0)))
 
   val _ = forEffect' :        reg KNormalForm.exp -> instruction hughes_list

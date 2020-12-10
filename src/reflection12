@@ -1,3 +1,6 @@
+
+***RESUBMITTED BC WE FIXED BUGS AND OPTIMIZED***
+
 1.  We pushed solution.scm, which has functions from 105 implemented. 
     They test the following:
       1. allocation of cons cells
@@ -18,10 +21,10 @@
 4. 
   The following are bugs we are aware of/ things we still need to implement
   1. record not implemented
-  2. letrec not implemented
-  3. pair? and other primitives not implemented
-  4. garbage collection needs to set registers above highest_reg to 0
-  5. we need to track down why div2 (ben london's test) doesn't work
+  2. error primitive not implemented
+  3. two of erica's tests were not passing, so must investigate
+  4. norman's benchmark tests don't pass (not sure whycd src)
+
 
 5.
 We chose a gamma of 4.0 because it achieved a sweet spot in the tradeoff
@@ -42,13 +45,9 @@ Gamma   Space  (b)  Time (s)    Decrease in Time   Increase in Space
 10.0    4,550,000   2.24        - 0.34             + 3,430,000
 
 6. 
- 12 benchmarks run without errors.
-Our system seems to be slower than others.
-Our hypothesis is that we use a lot of pointer indirection
-and that we need to implement more primitives and that our 
-garbage collector is very slow. We could also static inline 
-some functions in value.h. In the next few days, we plan to use 
-kcachegrind to find the bottlenecks in our system, and fix bugs.
+ 14 benchmarks run without errors.
+Our system seems to be around the same as others. Most tests took 
+less than a second.
 
 7. One thing we did to make our performance better was 
 to stop caching all the registers at the beginning of

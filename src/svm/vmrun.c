@@ -29,44 +29,40 @@
 #include "disasm.h"
 
 #define VMSAVE()  (vm->current_fun = fun, vm->ip = cip)
-#define VMLOAD()  (fun = vm->current_fun, regs = vm->registers + vm->window, cip = vm->ip, i = fun->instructions[cip])
+#define VMLOAD()  (fun = vm->current_fun, cip = vm->ip, i = fun->instructions[cip])
 #define GC() (VMSAVE(), gc(vm), VMLOAD())
 
+#define RX regs[uX(i)]
+#define RY regs[uY(i)]
+#define RZ regs[uZ(i)]
 
-//make macro to get register values
+#define LV() (literal_value(vm, uYZ(i)))
 
 void vmrun(VMState vm, struct VMFunction *fun) {
-  //cached instruction pointer
-  int cip = 0;
-  //cached register ptr
-  // const char *dump_decode = svmdebug_value("decode");
-  // const char *dump_call   = svmdebug_value("call");
+  int cip = 0;   //cached instruction pointer
 
-  // (void) dump_call;  // make it OK not to use `dump_call`
+  const char *dump_decode = svmdebug_value("decode");
+  const char *dump_call   = svmdebug_value("call");
+  (void) dump_call;  // make it OK not to use `dump_call`
+
   vm->current_fun = fun;
   Value* regs = vm->registers;
+  Instruction* instrs = fun->instructions;
 
   while (true) {
-    regs = vm->registers + vm->window;
-    Instruction i = fun->instructions[cip];
-    // Value RX = regs[uX(i)];
-    // Value RY = regs[uY(i)];
-    // Value RZ = regs[uZ(i)];
-    // vm->current_fun = fun;
-
-    // if (dump_decode)
-    //   idump(stderr, vm, cip, i, vm->window, &RX, &RY, &RZ);
+    Instruction i = instrs[cip];
+    
+    if (dump_decode)
+      idump(stderr, vm, cip, i, vm->window, &RX, &RY, &RZ);
 
     switch(opcode(i)) {
-
       case If:
       {
         bool b = AS_BOOLEAN(vm, regs[uX(i)]);
-          if (!b)
-            cip ++;
+        if (!b)
+          cip ++;
         break;
       }
-
       case GoTo:
       { 
         int32_t jump = iXYZ(i);
@@ -75,171 +71,80 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         cip += jump;
         continue;
       }
-
       case Print:
-        {
-        Value v = regs[uX(i)];
-        print("%v\n", v);        
+        print("%v\n", RX);        
         break; 
-        }
-
       case Check:
-        {
-        Value source = regs[uX(i)];
-        Value v = literal_value(vm, uYZ(i));
-        check(vm, AS_CSTRING(vm, v),  source);
+        check(vm, AS_CSTRING(vm, LV()),  RX);
         break;
-        }
       case Expect:
-        {
-        Value source = regs[uX(i)];
-        Value v = literal_value(vm, uYZ(i));
-        expect(vm, AS_CSTRING(vm, v),  source);
+        expect(vm, AS_CSTRING(vm, LV()),  RX);
         break;
-        }
       case Not:
-      {
-        bool b = AS_BOOLEAN(vm, regs[uY(i)]);
-        regs[uX(i)] = mkBooleanValue(!b);
+        RX = mkBooleanValue(!AS_BOOLEAN(vm, RY));
         break;
-      }
       case Or:
-      {
-        bool a = AS_BOOLEAN(vm, regs[uY(i)]);
-        bool b = AS_BOOLEAN(vm, regs[uZ(i)]);
-        regs[uX(i)] = mkBooleanValue(a || b);
+        RX = mkBooleanValue(AS_BOOLEAN(vm, RY) || AS_BOOLEAN(vm, RZ));
         break;
-      }
       case And:
-      {
-        bool a = AS_BOOLEAN(vm, regs[uY(i)]);
-        bool b = AS_BOOLEAN(vm, regs[uZ(i)]);
-        regs[uX(i)] = mkBooleanValue(a && b);
+        RX = mkBooleanValue(AS_BOOLEAN(vm, RY) && AS_BOOLEAN(vm, RZ));
         break;
-      }
       case LoadLiteral:
-      {
-        Value v = literal_value(vm, uYZ(i));
-        regs[uX(i)] = v;
+        regs[uX(i)] = LV();
         break;
-      }
       case Add:
-      {
-        Number_T num1 = AS_NUMBER(vm, regs[uY(i)]);
-        Number_T num2 = AS_NUMBER(vm, regs[uZ(i)]);
-        Value v = mkNumberValue(num1 + num2);
-        regs[uX(i)] = v;
+        RX = mkNumberValue(AS_NUMBER(vm, RY) + AS_NUMBER(vm, RZ));
         break;
-      }
       case GreaterThan:
-      {
-        Number_T num1 = AS_NUMBER(vm, regs[uY(i)]);
-        Number_T num2 = AS_NUMBER(vm, regs[uZ(i)]);
-        Value v = mkBooleanValue(num1 > num2);
-        regs[uX(i)] = v;
+        RX = mkBooleanValue(AS_NUMBER(vm, RY) > AS_NUMBER(vm, RZ));
         break;
-      }  
       case LessThan:
-      {
-        Number_T num1 = AS_NUMBER(vm, regs[uY(i)]);
-        Number_T num2 = AS_NUMBER(vm, regs[uZ(i)]);
-        Value v = mkBooleanValue(num1 < num2);
-        regs[uX(i)] = v;
+        RX = mkBooleanValue(AS_NUMBER(vm, RY) < AS_NUMBER(vm, RZ));
         break;
-      } 
       case GreaterThanEqualTo:
-      {
-        Number_T num1 = AS_NUMBER(vm, regs[uY(i)]);
-        Number_T num2 = AS_NUMBER(vm, regs[uZ(i)]);
-        Value v = mkBooleanValue(num1 >= num2);
-        regs[uX(i)] = v;
+        RX = mkBooleanValue(AS_NUMBER(vm, RY) >= AS_NUMBER(vm, RZ));
         break;
-      }  
       case LessThanEqualTo:
-      {
-        Number_T num1 = AS_NUMBER(vm, regs[uY(i)]);
-        Number_T num2 = AS_NUMBER(vm, regs[uZ(i)]);
-        Value v = mkBooleanValue(num1 <= num2);
-        regs[uX(i)] = v;
-        break;
-      }  
+        RX = mkBooleanValue(AS_NUMBER(vm, RY) <= AS_NUMBER(vm, RZ));
+        break;  
       case Equal:
-      {
-        bool b = eqvalue(regs[uY(i)], regs[uZ(i)]);
-        regs[uX(i)] = mkBooleanValue(b);
+        RX = mkBooleanValue(eqvalue(RY, RZ));
         break;
-      }   
       case NotEqual:
-      {
-        bool b = eqvalue(regs[uY(i)], regs[uZ(i)]);
-        regs[uX(i)] = mkBooleanValue(!b);
-        break;
-      }   
+        RX = mkBooleanValue(!eqvalue(RY, RZ));
+        break;  
       case Zero: 
-      {
-        regs[uX(i)] = mkNumberValue(0);
+        RX = mkNumberValue(0);
         break;
-      }
       case Subtract: 
-      {
-        Number_T num1 = AS_NUMBER(vm, regs[uY(i)]);
-        Number_T num2 = AS_NUMBER(vm, regs[uZ(i)]);
-        Value v = mkNumberValue(num1 - num2);
-        regs[uX(i)] = v;
+        RX = mkNumberValue(AS_NUMBER(vm, RY) - AS_NUMBER(vm, RZ));
         break;
-      }
       case IDiv: 
-      {
-        Number_T num1 = AS_NUMBER(vm, regs[uY(i)]);
-        Number_T num2 = AS_NUMBER(vm, regs[uZ(i)]);
-        int res = (int) num1 / num2;
-        Value v = mkNumberValue(res);
-        regs[uX(i)] = v;
+        RX = mkNumberValue((int) (AS_NUMBER(vm, RY) / AS_NUMBER(vm, RZ)));
         break;
-      }
       case FloatDiv: 
-      {
-        Number_T num1 = AS_NUMBER(vm, regs[uY(i)]);
-        Number_T num2 = AS_NUMBER(vm, regs[uZ(i)]);
-        Value v = mkNumberValue(num1 / num2);
-        regs[uX(i)] = v;
+        RX = mkNumberValue(AS_NUMBER(vm, RY) / AS_NUMBER(vm, RZ));
         break;
-      }
       case Multiply: 
-      {
-        Number_T num1 = AS_NUMBER(vm, regs[uY(i)]);
-        Number_T num2 = AS_NUMBER(vm, regs[uZ(i)]);
-        Value v = mkNumberValue(num1 * num2);
-        regs[uX(i)] = v;
+        RX = mkNumberValue(AS_NUMBER(vm, RY) * AS_NUMBER(vm, RZ));
         break;
-      }
       case SetGlobal: 
-      {
-        Value v = literal_value(vm, uYZ(i));
-        VTable_put(vm->globals, v, regs[uX(i)]);
+        VTable_put(vm->globals, LV(), regs[uX(i)]);
         break;
-      }
       case GetGlobal: 
-      {
-        Value v = VTable_get(vm->globals, literal_value(vm, uYZ(i)));
-        regs[uX(i)] = v;
+        RX = VTable_get(vm->globals, LV());
         break;
-      }
       case MakeConsCell: 
       { 
         VMNEW(struct VMBlock *, bl, vmsize_block(1));
         bl->nslots = 1;
         bl->slots[0] = regs[uX(i)];
-        regs[uX(i)] = mkConsValue(bl);
+        RX = mkConsValue(bl);
         break;
       }
       case ProjectBool: 
-      { 
-        bool b = AS_BOOLEAN(vm, regs[uX(i)]);
-        regs[uX(i)] = mkBooleanValue(b);
+        RX = mkBooleanValue(AS_BOOLEAN(vm, RX));
         break;
-      }
-      //TODO: check if theclere are right number of arguments
       case Call:
       {
         int lastarg = uZ(i);
@@ -265,6 +170,7 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         vm->window += a.start_window; //shift the window
 
         Value callee = regs[funreg];
+
         if (callee.tag == VMFunction)
          fun = callee.f;
         else if (callee.tag == VMClosure)
@@ -275,43 +181,39 @@ void vmrun(VMState vm, struct VMFunction *fun) {
             runerror(vm, "Function arity and arguments mismatched ");
         if (fun->nregs >= 255)
           runerror(vm, "Register file overflowed");
+        instrs = fun->instructions;
         cip = 0;
+        regs += a.start_window;
         continue;
       }
       case GC:
-      {
-        print("calling gc as a command");
         GC();
         break;
-      }
-      //TODO: check if there are right number of arguments
       case Return:
       {
         struct Activation a = vm->callstack[vm->callstack_size - 1];
-        regs[a.dest_reg - a.start_window] = regs[uX(i)];
+        regs[a.dest_reg - a.start_window] = RX;
+        regs -= a.start_window;
+        vm->window -= a.start_window;
         vm->callstack_size--;
         cip = a.pc + 1;
-
-        vm->window -= a.start_window;
         fun = a.fun;
+        instrs = fun->instructions;
         continue;
       }
       case Mov: 
-      {
-        regs[uX(i)] = regs[uY(i)];
+        RX = RY;
         break;
-      }
-      //TODO: wrap in GCVLIDATE
       case TailCall:
       {
-        int lastarg = uY(i); //this is rn from the semantics
-        int funreg = uX(i);  //this is r0 from the semantics
+        int lastarg = uY(i);
+        int funreg = uX(i);
 
         Value callee = regs[funreg];
         if (callee.tag == VMFunction)
-         fun = callee.f;
+         fun = GCVALIDATE(callee.f);
         else if (callee.tag == VMClosure)
-         fun = callee.hof->f;
+         fun = GCVALIDATE(callee.hof->f);
         else         
           runerror(vm, "Attempted to tailcall a non function\n");
 
@@ -321,101 +223,76 @@ void vmrun(VMState vm, struct VMFunction *fun) {
           runerror(vm, "Register file overflowed");
 
         memmove(regs, regs + funreg, (lastarg - funreg + 1) * sizeof(*regs));
+        instrs = fun->instructions;
         cip = 0;
         continue;
       }
       case Symbol_Observer:
-      {
-        regs[uX(i)] = mkBooleanValue(isSymbol(regs[uY(i)]));
+        RX = mkBooleanValue(isSymbol(RY));
         break;
-      }
       case Boolean_Observer: 
-      {
-        regs[uX(i)] = mkBooleanValue(isBoolean(regs[uY(i)]));
+        RX = mkBooleanValue(isBoolean(RY));
         break;
-      }
       case Number_Observer:
-      {
-        regs[uX(i)] = mkBooleanValue(isNumber(regs[uY(i)]));
+        RX = mkBooleanValue(isNumber(RY));
         break;
-      }
       case Function_Observer:
-      {
-        regs[uX(i)] = mkBooleanValue(isFunction(regs[uY(i)]));
+        RX = mkBooleanValue(isFunction(RY));
         break;
-      }
       case Pair_Observer:
-      {
-        regs[uX(i)] = mkBooleanValue(isPair(regs[uY(i)]));
+        RX = mkBooleanValue(isPair(RY));
         break;
-      }
       case Nil_Observer:
-      {
-        regs[uX(i)] = mkBooleanValue(eqvalue(regs[uY(i)], nilValue));
+        RX = mkBooleanValue(eqvalue(RY, nilValue));
         break;
-
-      }
       case Null_Observer:
-      {
-        regs[uX(i)] = mkBooleanValue(eqvalue(regs[uY(i)], emptylistValue));
+        RX = mkBooleanValue(eqvalue(RY, emptylistValue));
         break;
-      }
       case CheckAssert:
       {
-        Value v = literal_value(vm, uYZ(i));
-        check(vm, AS_CSTRING(vm, v),  regs[uX(i)]);
+        Value v = LV();
+        print("lit val is: %v\n", v);
+        check(vm, AS_CSTRING(vm, v),  RX);
+        print("value is: %v\n", RX);
         expect(vm, AS_CSTRING(vm, v),  mkBooleanValue(true));
         break;      
       }
       case Car:
       {
-        Value v = regs[uY(i)];
+        Value v = RY;
         if (eqvalue(emptylistValue, v)) 
           runerror(vm, "car of empty list");
-
-        struct VMBlock* bl = AS_CONS_CELL(vm, v);
-        regs[uX(i)] = bl->slots[0];
+        RX = AS_CONS_CELL(vm, v)->slots[0];
         break;
       }
       case Cdr:
-      {
-        struct VMBlock* bl = AS_CONS_CELL(vm, regs[uY(i)]);   
-        regs[uX(i)] = bl->slots[1];
+        RX = AS_CONS_CELL(vm, regs[uY(i)])->slots[1];
         break;
-      }
       case MkClosure:
       {
-        VMNEW(struct VMClosure*, closure, vmsize_closure(uZ(i)));
-        closure->nslots = uZ(i);
-        closure->f = AS_VMFUNCTION(vm, regs[uY(i)]);
-        regs[uX(i)] = mkClosureValue(closure);
+        int size = uZ(i);
+        VMNEW(struct VMClosure*, closure, vmsize_closure(size));
+        closure->nslots = size;
+        closure->f = AS_VMFUNCTION(vm, RY);
+        RX = mkClosureValue(closure);
         break;
       }
       case GetClSlot:
-      {
-        struct VMClosure* closure = AS_CLOSURE(vm, regs[uY(i)]);
-        regs[uX(i)] = closure->captured[uZ(i)];
+        RX = AS_CLOSURE(vm, regs[uY(i)])->captured[uZ(i)];
         break;
-      }
       case SetClSlot:
-      {
-        struct VMClosure* closure = AS_CLOSURE(vm, regs[uX(i)]);
-        closure->captured[uZ(i)] =  regs[uY(i)];
+        AS_CLOSURE(vm, RX)->captured[uZ(i)] = RY;
         break;
-      }
       case Error:
-      {
-        runerror(vm, AS_CSTRING(vm, regs[uX(i)]));
+        runerror(vm, AS_CSTRING(vm, RX));
         break;
-      }
       case Cons:
       {
-        Value cons_val = regs[uY(i)];
         VMNEW(struct VMBlock*, new_list, vmsize_block(2));
         new_list->nslots = 2;
-        new_list->slots[1] = regs[uZ(i)];
-        new_list->slots[0] = cons_val;
-        regs[uX(i)] = mkConsValue(new_list);
+        new_list->slots[1] = RZ;
+        new_list->slots[0] = RY;
+        RX = mkConsValue(new_list);
         break;
       }
       case Halt:
@@ -427,8 +304,5 @@ void vmrun(VMState vm, struct VMFunction *fun) {
     }
     cip++;
   }
-
-  // Run code from `fun` until it executes a Halt instruction.
-  // Then return.
   return;
 }

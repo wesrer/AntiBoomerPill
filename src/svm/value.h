@@ -309,11 +309,9 @@ static inline bool isNumber(Value v) {
 }
 
 static inline bool isPair(Value v) {
-  if (v.tag != Block)
-    return false;
-  else if (v.block->slots[1].tag == Block)
-    return false;
-  return true;
+  if (v.tag == ConsCell)
+    return true;
+  return false;
 }
 
 static inline Value mkTableValue(struct VTable_T *t) {
