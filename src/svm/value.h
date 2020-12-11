@@ -22,6 +22,8 @@ typedef enum { Nil = 0,   // vScheme value not found in uScheme
                String,
                Emptylist,
                ConsCell,   // represented as Block (for now)
+               DenseConsCell,  
+
 
                VMFunction, // first-order function (sequence of instructions)
                VMClosure,  // higher-order function
@@ -54,6 +56,7 @@ typedef struct Value {
     Number_T n;
     struct VMString *s;
     struct VMBlock *block;  // also ConsCell
+    struct VMDenseCons *dense_cons;
     struct VMFunction *f;
     struct VMClosure *hof;
     struct VSeq_T *seq;
@@ -100,6 +103,7 @@ static inline bool         asBoolean_ (VMState, Value, const char *file, int lin
 #define AS_BOOLEAN(VM, V)    asBoolean_    ((VM), (V), __FILE__, __LINE__)
 #define AS_BLOCK(VM, V)      asBlock_     ((VM), (V), __FILE__, __LINE__)
 #define AS_CONS_CELL(VM, V)  asCons_      ((VM), (V), __FILE__, __LINE__)
+#define AS_DENSE_CONS(VM, V)  asDenseCons_      ((VM), (V), __FILE__, __LINE__)
 #define AS_CSTRING(VM, V)    asCString_   ((VM), (V), __FILE__, __LINE__)
 #define AS_NUMBER(VM, V)     asNumber_    ((VM), (V), __FILE__, __LINE__)
 #define AS_CLOSURE(VM, V)    asClosure_   ((VM), (V), __FILE__, __LINE__)
@@ -120,12 +124,17 @@ extern bool eqtests  (Value v1, Value v2); // for check-expect
 
 // when you're read to do cons,car,cdr (from module 1 onward):
 
+struct VMDenseCons {
+  GCMETA(VMDenseCons)
+  Value car;
+  Value cdr;
+};
+
 struct VMBlock {
   GCMETA(VMBlock)
   int nslots;
   struct Value slots[];
 };
-
 
 // when you implement first-order functions (module 7 and onward):
 
@@ -184,6 +193,13 @@ static inline struct VMBlock *asCons_(VMState vm, Value v, const char *file, int
     typeerror(vm, "a cons cell", v, file, line);
   return v.block;
 }
+
+static inline struct VMDenseCons *asDenseCons_(VMState vm, Value v, const char *file, int line) {
+  if (v.tag != DenseConsCell)
+    typeerror(vm, "a dense cons cell", v, file, line);
+  return v.dense_cons;
+}
+
 static inline const char *asCString_(VMState vm, Value v, const char *file, int line) {
   if (v.tag != String)
     typeerror(vm, "a string", v, file, line);
@@ -227,6 +243,8 @@ static inline bool asBoolean_(VMState vm, Value v, const char *file, int line) {
     else if (tag == Emptylist)
       return true;
     else if (tag == ConsCell)
+      return true;
+    else if (tag == DenseConsCell)
       return true;
     else if (tag == Block)
        return true;
@@ -287,6 +305,13 @@ static inline Value mkConsValue(struct VMBlock *bl) {
   return val;
 }
 
+static inline Value mkDenseConsValue(struct VMDenseCons *dc) {
+  Value val;
+  val.tag = DenseConsCell;
+  val.dense_cons = dc;
+  return val;
+}
+
 /////////////////////////////////////////////////////////////////////////////////
 
 static inline bool isFunction(Value v) {
@@ -310,7 +335,7 @@ static inline bool isNumber(Value v) {
 }
 
 static inline bool isPair(Value v) {
-  if (v.tag == ConsCell)
+  if (v.tag == DenseConsCell)
     return true;
   return false;
 }

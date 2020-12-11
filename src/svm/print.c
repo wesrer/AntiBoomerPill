@@ -160,6 +160,23 @@ static void print_list(Printbuf output, Value v) {
   }
   bufputs(output, ")");
 }
+
+static void print_dense_list(Printbuf output, Value v) {
+  Value cons = v;
+  const char *prefix = "";
+  bufputs(output, "(");
+  while (cons.tag == DenseConsCell) {
+    bufputs(output, prefix);
+    bprint(output, "%v", cons.dense_cons->car);
+    prefix = " ";
+    cons = cons.dense_cons->cdr;
+  }
+  if (cons.tag != Emptylist) {
+    bufputs(output, " . ");
+    bprint(output, "%v", cons);
+  }
+  bufputs(output, ")");
+}
     
 
 void bprintvalue(Printbuf output, va_list_box *box) {
@@ -195,6 +212,7 @@ void bprintvalue(Printbuf output, va_list_box *box) {
     case VMClosure:  OUTPUT("closure %p", (void *) v.hof); break;
     case LightUserdata: OUTPUT("userdata %p", (void *) v.p); break;
     case ConsCell:   print_list(output, v); break;
+    case DenseConsCell:   print_dense_list(output, v); break;
     case Emptylist:  bufputs(output, "'()"); break;
     default: fprintf(stderr, "BAD TAG in print.c <tag=%d=0x%x>\n", v.tag, v.tag); break;
     }

@@ -270,11 +270,11 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         Value v = RY;
         if (eqvalue(emptylistValue, v)) 
           runerror(vm, "car of empty list");
-        RX = AS_CONS_CELL(vm, v)->slots[0];
+        RX = AS_DENSE_CONS(vm, v)->car;
         break;
       }
       case Cdr:
-        RX = AS_CONS_CELL(vm, regs[uY(i)])->slots[1];
+        RX = AS_DENSE_CONS(vm, RY)->cdr;
         break;
       case MkClosure:
       {
@@ -296,11 +296,11 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         break;
       case Cons:
       {
-        VMNEW(struct VMBlock*, new_list, vmsize_block(2));
-        new_list->nslots = 2;
-        new_list->slots[1] = RZ;
-        new_list->slots[0] = RY;
-        RX = mkConsValue(new_list);
+        VMNEW(struct VMDenseCons*, new_list, sizeof(*new_list));
+        // new_list->nslots = 2;
+        new_list->car = RY;
+        new_list->cdr = RZ;
+        RX = mkDenseConsValue(new_list);
         break;
       }
       case Halt:
