@@ -37,14 +37,16 @@ VMState newstate(void) {
     VMState state = malloc(sizeof(*state));
     state->ip = 0;
     state->num_literals = 0;
-    // state->instructions = NULL;
+    state->num_globals = 0;
+
     state->registers= calloc(REGISTER_SIZE, sizeof(Value));
     state->callstack_length = CALLSTACK_SIZE;
     state->callstack_size = 0;
     state->callstack = malloc(CALLSTACK_SIZE * sizeof(struct Activation));
     state->literal_pool = malloc(LITERAL_SIZE * sizeof(Value));
     state->globals =  VTable_new(GLOBALS_SIZE);
-    // state->highest_reg = 0;
+    state->global_pool = malloc(GLOBALS_SIZE * sizeof(Value));
+    
     state->window = 0;
     return state;
 }
@@ -69,4 +71,25 @@ Value literal_value(VMState state, unsigned index) {
 
 int literal_count(VMState state) {
   return state->num_literals;
+}
+
+int global_slot(VMState state){
+    int counter = state->num_globals++;
+    assert(counter < GLOBALS_SIZE);
+
+    return counter;
+}
+
+bool global_insert(VMState state, unsigned index, Value insert_pls){
+    state->global_pool[index] = insert_pls;
+
+    return true;
+}
+
+Value global_value(VMState state, unsigned index) {
+    return (state->global_pool)[index];
+}
+
+int global_count(VMState state){
+    return state->num_globals;
 }

@@ -30,7 +30,7 @@
 
 #define VMSAVE()  (vm->current_fun = fun, vm->ip = cip)
 #define VMLOAD()  (fun = vm->current_fun, cip = vm->ip, i = fun->instructions[cip])
-#define GC() (VMSAVE(), gc(vm), VMLOAD())
+// #define GC() (VMSAVE(), gc(vm), VMLOAD())
 
 #define RX regs[uX(i)]
 #define RY regs[uY(i)]
@@ -66,8 +66,8 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       case GoTo:
       { 
         int32_t jump = iXYZ(i);
-        if (jump < 0 && gc_needed)
-          GC();
+        // if (jump < 0 && gc_needed)
+          // GC();
         cip += jump;
         continue;
       }
@@ -128,12 +128,20 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       case Multiply: 
         RX = mkNumberValue(AS_NUMBER(vm, RY) * AS_NUMBER(vm, RZ));
         break;
-      case SetGlobal: 
-        VTable_put(vm->globals, LV(), regs[uX(i)]);
+      // case SetGlobal: 
+      //   VTable_put(vm->globals, LV(), regs[uX(i)]);
+      //   break;
+      // case GetGlobal: 
+      //   RX = VTable_get(vm->globals, LV());
+      //   break;
+      case SetGlobal:
+        global_insert(vm, uYZ(i), regs[uX(i)]);
         break;
-      case GetGlobal: 
-        RX = VTable_get(vm->globals, LV());
+
+      case GetGlobal:
+        regs[uX(i)] = global_value(vm, uYZ(i));
         break;
+
       case MakeConsCell: 
       { 
         VMNEW(struct VMBlock *, bl, vmsize_block(1));
@@ -151,8 +159,8 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         int funreg = uY(i);
         int destreg = uX(i);
 
-        if (gc_needed)
-          GC();
+        // if (gc_needed)
+        //   GC();
 
         struct Activation a;
         a.start_window = funreg;
@@ -187,7 +195,7 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         continue;
       }
       case GC:
-        GC();
+        // GC();
         break;
       case Return:
       {

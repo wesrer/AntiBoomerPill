@@ -9,6 +9,7 @@
 #include "iparsers.h"
 #include "vmstate.h"
 #include "value.h"
+#include "print.h"
 
 #include <stdlib.h>
 
@@ -157,4 +158,32 @@ Instruction parseR1LIT(VMState vm, Opcode opcode, Tokens operands, unsigned *max
   return eR1U16(opcode, regX, immediate);
 }
 
+Instruction parseGlobals(VMState vm, Opcode opcode, Tokens operands, unsigned *maxreg) {
+  initnames(); // before comparing names, you must call this function
+  uint8_t regX = tokens_get_byte(&operands, NULL);
+  char* buffer = malloc(256 * sizeof(*buffer));
+  Value key = get_literal(&operands, buffer);
+  uint16_t slot = 0;
+
+  if (opcode == SetGlobal){
+    slot = global_slot(vm);
+    VTable_put(vm->globals, key, mkNumberValue(slot));
+    print("putting in value %v for key %v\n", mkNumberValue(slot), key);
+  } 
+  else if (opcode == GetGlobal) {
+    Value temp = VTable_get(vm->globals, key);
+    if (eqvalue(temp, nilValue)){
+      slot = global_slot(vm);
+      VTable_put(vm->globals, key, mkNumberValue(slot));
+      temp = VTable_get(vm->globals, key);
+    }
+    // print("found value: %v for key:%v\n", temp, key);
+    slot = (uint16_t) AS_NUMBER(vm,temp);
+  }
+
+  assert(operands == NULL);
+  SEE(regX);
+  free(buffer);
+  return eR1U16(opcode, regX, slot);
+}
 

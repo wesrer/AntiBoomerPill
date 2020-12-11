@@ -23,6 +23,8 @@ typedef struct VMState {
     //Literal Pool
     Value* literal_pool;
 
+    Value* global_pool;
+
     struct VMFunction *current_fun;
 
     struct Activation* callstack;
@@ -35,7 +37,9 @@ typedef struct VMState {
     
     int num_literals;
 
-    //Globals
+    int num_globals;
+
+
     VTable_T globals;
 
     Value checkv;
@@ -47,6 +51,15 @@ typedef struct VMState {
 
 VMState newstate(void);       // allocate and initialize (to empty)
 void freestatep(VMState *sp); // deallocate
+
+bool global_insert(VMState state, unsigned index, Value insert_pls);
+int global_slot(VMState state);
+  // return index of globals in `globals`
+
+Value global_value(VMState state, unsigned index);
+
+int global_count(VMState state);
+
 
 int literal_slot(VMState state, Value literal);
   // return index of literal in `literals`, adding if needed
