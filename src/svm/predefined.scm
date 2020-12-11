@@ -1,3 +1,8 @@
+;  predefined uScheme functions 99b 
+(define append (xs ys)
+  (if (null? xs)
+     ys
+     (cons (car xs) (append (cdr xs) ys))))
 ;  predefined uScheme functions 96a 
 (define caar (xs) (car (car xs)))
 (define cadr (xs) (car (cdr xs)))
@@ -35,11 +40,6 @@
 (define list1 (x)     (cons x '()))
 (define list2 (x y)   (cons x (list1 y)))
 (define list3 (x y z) (cons x (list2 y z)))
-;  predefined uScheme functions 99b 
-(define append (xs ys)
-  (if (null? xs)
-     ys
-     (cons (car xs) (append (cdr xs) ys))))
 ;  predefined uScheme functions 100b 
 (define revapp (xs ys) ; (reverse xs) followed by ys
   (if (null? xs)

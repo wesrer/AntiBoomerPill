@@ -33,8 +33,8 @@ instruction_info instructions[] = {
   { "zero", Zero, parseR1, "zero $rX"},
   // { "setglobal", SetGlobal, parseR1LIT, "globals[LIT] := $rX" },
   // { "getglobal", GetGlobal, parseR1LIT, "getglobal $rX LIT" },
-  { "setglobal", SetGlobal, parseGlobals, "globals[" },
-  { "getglobal", GetGlobal, parseGlobals, "getglobal $rX LIT" }, 
+  { "setglobal", SetGlobal, parseGlobals, "globals[$rYZ] := rX" },
+  { "getglobal", GetGlobal, parseGlobals, "getglobal $rX $rYZ" }, 
   { "makeconscell", MakeConsCell, parseR1, "makeconscell $rX"},
   { "projectbool", ProjectBool, parseR1, "projectbool $rX"},
   { "goto", GoTo, parseR0I24, "goto iXYZ"},
@@ -74,7 +74,7 @@ instruction_info instructions[] = {
   { "printu", Printu, parseR1, "printu $rX" },
   { "println", Println, parseR1, "println $rX" },
 
-
+  {"use"}
 };
 
 int isgetglobal(Opcode code) {

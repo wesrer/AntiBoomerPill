@@ -158,30 +158,31 @@ Instruction parseR1LIT(VMState vm, Opcode opcode, Tokens operands, unsigned *max
   return eR1U16(opcode, regX, immediate);
 }
 
+uint16_t insert_global_value(VMState vm, Value key){
+    Value temp = VTable_get(vm->globals, key);
+
+    // if no global has been assigned yet, give it a new slot
+    if (eqvalue(temp, nilValue)){
+      uint16_t slot = global_slot(vm);
+      VTable_put(vm->globals, key, mkNumberValue(slot));
+      return slot;
+    }
+    
+    // Otherwise send back the slot value found
+    return (uint16_t) AS_NUMBER(vm, temp);
+}
+
 Instruction parseGlobals(VMState vm, Opcode opcode, Tokens operands, unsigned *maxreg) {
   initnames(); // before comparing names, you must call this function
+
   uint8_t regX = tokens_get_byte(&operands, NULL);
   char* buffer = malloc(256 * sizeof(*buffer));
+
   Value key = get_literal(&operands, buffer);
-  uint16_t slot = 0;
-
-  if (opcode == SetGlobal){
-    slot = global_slot(vm);
-    VTable_put(vm->globals, key, mkNumberValue(slot));
-    print("putting in value %v for key %v\n", mkNumberValue(slot), key);
-  } 
-  else if (opcode == GetGlobal) {
-    Value temp = VTable_get(vm->globals, key);
-    if (eqvalue(temp, nilValue)){
-      slot = global_slot(vm);
-      VTable_put(vm->globals, key, mkNumberValue(slot));
-      temp = VTable_get(vm->globals, key);
-    }
-    // print("found value: %v for key:%v\n", temp, key);
-    slot = (uint16_t) AS_NUMBER(vm,temp);
-  }
-
+  uint16_t slot = insert_global_value(vm, key);
+  
   assert(operands == NULL);
+
   SEE(regX);
   free(buffer);
   return eR1U16(opcode, regX, slot);

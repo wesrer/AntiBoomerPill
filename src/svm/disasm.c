@@ -28,9 +28,6 @@ typedef uint32_t OperandSet;  // one bit per operand
 static OperandSet operands(Instruction i);
 
 
-
-
-
 void printasm(FILE *fp, VMState vm, Instruction i) {
   Opcode code = opcode(i);
   instruction_info *info = itable_entry_by_code(code);

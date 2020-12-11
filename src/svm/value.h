@@ -108,6 +108,7 @@ static inline bool         asBoolean_ (VMState, Value, const char *file, int lin
 
 // additional observers for values
 
+extern uint32_t oldhashvalue(Value v);
 extern uint32_t hashvalue(Value v);
 extern bool eqvalue  (Value v1, Value v2); // vscheme = primitive
 extern bool identical(Value v1, Value v2); // for hashing

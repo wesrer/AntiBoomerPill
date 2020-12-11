@@ -74,8 +74,9 @@ int literal_count(VMState state) {
 }
 
 int global_slot(VMState state){
-    int counter = state->num_globals++;
+    int counter = state->num_globals;
     assert(counter < GLOBALS_SIZE);
+    state->num_globals++;
 
     return counter;
 }

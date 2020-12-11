@@ -169,7 +169,7 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         a.fun = fun;
         a.pc = cip;
 
-	      int32_t callstack_size = vm->callstack_size++;
+	int32_t callstack_size = vm->callstack_size++;
 
         if (callstack_size >= vm->callstack_length)
           runerror(vm, "Stack overflow!");
@@ -194,9 +194,11 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         regs += a.start_window;
         continue;
       }
+
       case GC:
         // GC();
         break;
+
       case Return:
       {
         struct Activation a = vm->callstack[vm->callstack_size - 1];
@@ -259,9 +261,7 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       case CheckAssert:
       {
         Value v = LV();
-        print("lit val is: %v\n", v);
         check(vm, AS_CSTRING(vm, v),  RX);
-        print("value is: %v\n", RX);
         expect(vm, AS_CSTRING(vm, v),  mkBooleanValue(true));
         break;      
       }

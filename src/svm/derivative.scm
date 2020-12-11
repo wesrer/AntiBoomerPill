@@ -31,5 +31,6 @@
 )
 
 (benchmark 0 N)
+(print N)
 
 

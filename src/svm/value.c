@@ -9,6 +9,7 @@
 #include "value.h"
 #include "vmstring.h"
 #include "print.h"
+#include "string.h"
 
 
 Value nilValue;
@@ -58,7 +59,8 @@ bool identical(Value v1, Value v2) { // object identity,  for hashing!
 #define CFUNHASH  0x3c059f75
 #define CLOHASH   0xc940c06a
 
-uint32_t hashvalue(Value v) {
+// Old hash function
+uint32_t oldhashvalue(Value v) {
     switch (v.tag) {
     case Nil:           return NILHASH;
     case Boolean:       return v.b ? TRUEHASH : FALSEHASH;
@@ -78,6 +80,67 @@ uint32_t hashvalue(Value v) {
 
 }
 
+static uint32_t hash_bytes(const void *bytes, size_t len, size_t seed)
+{
+    const uint32_t m = UINT32_C(0x5bd1e995);
+    uint32_t hash = seed ^ len;
+    const uint8_t *buf = bytes;
+
+    while (len >= 4)
+    {
+        uint32_t k;
+        memcpy(&k, buf, sizeof k);
+        k *= m;
+        k ^= k >> 24;
+        k *= m;
+        hash *= m;
+        hash ^= k;
+        buf += 4;
+        len -= 4;
+    }
+
+    switch (len)
+    {
+        case 3:
+            hash ^= buf[2] << 16;
+            /* fallthrough */
+        case 2:
+            hash ^= buf[1] << 8;
+            /* fallthrough */
+        case 1:
+            hash ^= buf[0];
+            hash *= m;
+    }
+
+    hash ^= hash >> 13;
+    hash *= m;
+    hash ^= hash >> 15;
+    return hash;
+}
+
+static uint32_t hash_pointer(const void *p)
+{
+    return hash_bytes(&p, sizeof p, UINT32_C(0xc70f6907));
+}
+
+uint32_t hashvalue(Value v) {
+    switch (v.tag) {
+    case Nil:           return NILHASH;
+    case Boolean:       return v.b ? TRUEHASH : FALSEHASH;
+    case Emptylist:     return EMPTYHASH;
+    case Number:        return NUMHASH ^ (uint32_t) v.n;
+    case String:        return Vmstring_hash(v.s);
+    case Table:         return TABHASH;
+    case Seq:           return SEQHASH;
+    case ConsCell:      return hash_pointer(v.block);
+    case Block:         return hash_pointer(v.block);
+    case VMFunction:    return hash_pointer(v.f);
+    case CFunction:     return CFUNHASH;
+    case VMClosure:     return hash_pointer(v.hof);
+    case LightUserdata: return (uint32_t) ((uintptr_t) v.p >> 3);
+    default:  assert(0); 
+    }
+}
 
 //// the uscheme = primitive.  
 
