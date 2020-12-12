@@ -21,6 +21,7 @@ instruction_info instructions[] = {
   { "call", Call, parseR3, "rX := call rY (rY+1, ..., rZ)"},
   { "tailcall", TailCall, parseR2, "tailcall rX (rX+1, ..., rY)"},
   { "check-assert", CheckAssert, parseR1LIT, "check-assert LIT, $rX" },
+  // { "check-error", CheckError, parseR1LIT, "check-error LIT, $rX"},
   { "expect", Expect, parseR1LIT, "expect LIT, $rX" },
   { "+", Add, parseR3, "$rX := $rY + $rZ" },
   { "-", Subtract, parseR3, "$rX := $rY - $rZ" },

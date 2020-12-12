@@ -66,7 +66,6 @@ struct
   val checky = [ "check", "expect" ]  (* arity 2 *)
 
 
-
   (* Representation of a primitive, with observers *)
 
   type base = { name : string, arity : int }

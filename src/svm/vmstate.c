@@ -29,6 +29,7 @@ void freestatep(VMState *sp) {
     free(vm->registers);
     free(vm->literal_pool);
     free(vm->callstack);
+    free(vm->global_pool);
     *sp = NULL;
     free(vm);
 }
@@ -46,7 +47,7 @@ VMState newstate(void) {
     state->literal_pool = malloc(LITERAL_SIZE * sizeof(Value));
     state->globals =  VTable_new(GLOBALS_SIZE);
     state->global_pool = malloc(GLOBALS_SIZE * sizeof(Value));
-    
+    state->checkv = nilValue;
     state->window = 0;
     return state;
 }

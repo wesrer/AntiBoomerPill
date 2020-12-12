@@ -30,7 +30,7 @@
 
 #define VMSAVE()  (vm->current_fun = fun, vm->ip = cip)
 #define VMLOAD()  (fun = vm->current_fun, cip = vm->ip, i = fun->instructions[cip])
-// #define GC() (VMSAVE(), gc(vm), VMLOAD())
+#define GC() (VMSAVE(), gc(vm), VMLOAD())
 
 #define RX regs[uX(i)]
 #define RY regs[uY(i)]
@@ -67,7 +67,7 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       { 
         int32_t jump = iXYZ(i);
         // if (jump < 0 && gc_needed)
-          // GC();
+        //   GC();
         cip += jump;
         continue;
       }
@@ -169,7 +169,7 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         a.fun = fun;
         a.pc = cip;
 
-	int32_t callstack_size = vm->callstack_size++;
+	      int32_t callstack_size = vm->callstack_size++;
 
         if (callstack_size >= vm->callstack_length)
           runerror(vm, "Stack overflow!");
@@ -194,7 +194,6 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         regs += a.start_window;
         continue;
       }
-
       case GC:
         // GC();
         break;
@@ -265,6 +264,18 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         expect(vm, AS_CSTRING(vm, v),  mkBooleanValue(true));
         break;      
       }
+      // case CheckError:
+      // {
+      //   Value v = LV();
+        
+      //   struct Activation a;
+      //   a.
+        
+      //   check(vm, AS_CSTRING(vm, v),  RX);
+      //   expect(vm, AS_CSTRING(vm, v),  mkBooleanValue(true));
+      //   printf("check error bitch\n");
+      //   break;
+      // }
       case Car:
       {
         Value v = RY;

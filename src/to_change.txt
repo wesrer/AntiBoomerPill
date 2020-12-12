@@ -6,7 +6,6 @@ things that dont work:
 4. allocfast test?? what
 5. arrays
 6. closure bug
-7. letrec everything
 8. ask abt erica's knormalize test?
 and erica's fotest
 

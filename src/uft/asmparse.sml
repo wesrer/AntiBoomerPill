@@ -183,7 +183,7 @@ eR1 "print" <$> reg : instruction producer *)
    <|> eR1U16 "loadliteral" <$> reg <~> the ":=" <*> literal
    <|> the "check" >> eR1U16_switch "check" <$> literal <~> the "," <*> reg
    <|> the "check-assert" >> eR1U16_switch "check-assert" <$> literal <~> the "," <*> reg
-
+   (* <|> the "check-error" >> eR1U16_switch "check-error" <$> literal <~> the "," <*> reg *)
    <|> the "expect" >> eR1U16_switch "expect" <$> literal <~> the "," <*> reg
    <|> eR1U16 "getglobal" <$> reg <~> the ":=" <~> the "globals" <~> the "[" <*> literal <~> the "]"
    <|> the "globals" >> the "[" >> eR1U16_switch "setglobal" <$> literal <~> the "]" <~> the ":=" <*> reg
