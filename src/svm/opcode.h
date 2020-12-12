@@ -16,7 +16,7 @@ typedef enum opcode {
                      LoadLiteral, // R1LIT
                       Check, Expect, // R1LIT
                       CheckAssert,
-                    //   CheckError,
+                      CheckError,
                       Unimp, // stand-in for opcodes not yet implemented
                       Not,
                       Add,

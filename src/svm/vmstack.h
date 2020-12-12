@@ -8,8 +8,8 @@ struct Activation {
   int end_window;
   int dest_reg;
   struct VMFunction* fun;
-  // Value check_value;
-  // bool check_error;
+  Value check_value;
+  bool check_error;
   int pc;
 };
 

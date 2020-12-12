@@ -183,7 +183,7 @@ eR1 "print" <$> reg : instruction producer *)
    <|> eR1U16 "loadliteral" <$> reg <~> the ":=" <*> literal
    <|> the "check" >> eR1U16_switch "check" <$> literal <~> the "," <*> reg
    <|> the "check-assert" >> eR1U16_switch "check-assert" <$> literal <~> the "," <*> reg
-   (* <|> the "check-error" >> eR1U16_switch "check-error" <$> literal <~> the "," <*> reg *)
+   <|> the "check-error" >> eR1U16_switch "check-error" <$> literal <~> the "," <*> reg
    <|> the "expect" >> eR1U16_switch "expect" <$> literal <~> the "," <*> reg
    <|> eR1U16 "getglobal" <$> reg <~> the ":=" <~> the "globals" <~> the "[" <*> literal <~> the "]"
    <|> the "globals" >> the "[" >> eR1U16_switch "setglobal" <$> literal <~> the "]" <~> the ":=" <*> reg
@@ -219,6 +219,7 @@ eR1 "print" <$> reg : instruction producer *)
    <|> eR3 "mkclosure" <$> reg <~> the ":=" <~> the "closure" <~> the "[" <*> reg <~> the "," <*> int <~> the "]"
    <|> eR3 "getclslot" <$> reg <~> the ":=" <*> reg <~> the "." <*> int
    <|> eR3 "setclslot" <$> reg <~> the "." <*> int <~> the ":=" <*> reg
+
 
    <|> the "error" >> eR1 "error" <$> reg
    <|> the "printu" >> eR1 "printu" <$> reg
@@ -322,6 +323,8 @@ val parse =
             spaceSep ["expect", unparse_lit y, ",", reg x]
     | unparse1 (A.OBJECT_CODE (O.REGSLIT ("check-assert", [x], y))) = 
             spaceSep ["check-assert", unparse_lit y, ",", reg x]
+    | unparse1 (A.OBJECT_CODE (O.REGSLIT ("check-error", [x], y))) = 
+            spaceSep ["check-error", unparse_lit y, ",", reg x]
     | unparse1 (A.OBJECT_CODE (O.REGSLIT ("getglobal", [x], y))) = 
             spaceSep [String.concat [reg x, ":=", "globals[", unparse_lit y, "]"]] 
     | unparse1 (A.OBJECT_CODE (O.REGSLIT ("setglobal", [x], y))) = 

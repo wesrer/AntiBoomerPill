@@ -115,5 +115,6 @@ struct
     | close (X.DEFINE (n, (xs, e))) = C.DEFINE (n, (xs, closeExp [] e))
     | close (X.CHECK_EXPECT (s1, e1, s2, e2)) = C.CHECK_EXPECT (s1, closeExp [] e1, s2, closeExp [] e2)
     | close (X.CHECK_ASSERT (s, e)) = C.CHECK_ASSERT (s, closeExp [] e)
+    | close (X.CHECK_ERROR (s, e)) = C.CHECK_ERROR (s, closeExp [] e)
 
 end

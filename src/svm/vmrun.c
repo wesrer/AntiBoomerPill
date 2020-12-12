@@ -201,6 +201,12 @@ void vmrun(VMState vm, struct VMFunction *fun) {
       case Return:
       {
         struct Activation a = vm->callstack[vm->callstack_size - 1];
+        if (a.check_error)
+        {
+          check(vm, AS_CSTRING(vm, a.check_value),  mkBooleanValue(true));
+          expect(vm, AS_CSTRING(vm, a.check_value),  mkBooleanValue(false));
+        }
+          
         regs[a.dest_reg - a.start_window] = RX;
         regs -= a.start_window;
         vm->window -= a.start_window;
@@ -264,18 +270,31 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         expect(vm, AS_CSTRING(vm, v),  mkBooleanValue(true));
         break;      
       }
-      // case CheckError:
-      // {
-      //   Value v = LV();
+      case CheckError:
+      {
+        printf("check error\n");
+        Value v = LV();
+
+        struct Activation b = vm->callstack[vm->callstack_size - 1];
         
-      //   struct Activation a;
-      //   a.
+        struct Activation a;
+        a.start_window = b.start_window;
+        a.end_window = b.end_window;
+        a.dest_reg = b.dest_reg;
+        a.fun = fun;
+        a.pc = cip;
+        a.check_error = true;
+        a.check_value = v;
+
+	      int32_t callstack_size = vm->callstack_size++;
+
+        if (callstack_size >= vm->callstack_length)
+          runerror(vm, "Stack overflow!");
+
+        vm->callstack[callstack_size] = a;
         
-      //   check(vm, AS_CSTRING(vm, v),  RX);
-      //   expect(vm, AS_CSTRING(vm, v),  mkBooleanValue(true));
-      //   printf("check error bitch\n");
-      //   break;
-      // }
+        break;
+      }
       case Car:
       {
         Value v = RY;
@@ -303,8 +322,20 @@ void vmrun(VMState vm, struct VMFunction *fun) {
         AS_CLOSURE(vm, RX)->captured[uZ(i)] = RY;
         break;
       case Error:
+      {
+        int size = vm->callstack_size;
+        for (int i = 0;  i < size; i++)
+        {
+          if (vm->callstack[i].check_error) 
+            {
+            printf("found an error in callstack\n");
+            check(vm, AS_CSTRING(vm, vm->callstack[i].check_value),  mkBooleanValue(true));
+            expect(vm, AS_CSTRING(vm, vm->callstack[i].check_value),  mkBooleanValue(true));
+            }
+        }
         runerror(vm, AS_CSTRING(vm, RX));
         break;
+      }
       case Cons:
       {
         VMNEW(struct VMDenseCons*, new_list, sizeof(*new_list));

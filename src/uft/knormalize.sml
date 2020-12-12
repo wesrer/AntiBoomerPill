@@ -150,6 +150,7 @@ struct
           F.EXP x => exp env reg_set x
         | F.CHECK_EXPECT (s1, e1, s2, e2) => K.SEQ ((helper e1 P.check (ObjectCode.STRING s1) reg_set env), (helper e2 P.expect (ObjectCode.STRING s2) reg_set env))
         | F.CHECK_ASSERT (s, x) => (helper x P.check_assert (ObjectCode.STRING s) reg_set env)
+        | F.CHECK_ERROR (s, x) => (helper x P.check_error (ObjectCode.STRING s) reg_set env)
         | F.VAL (name, x) => exp env reg_set (F.SETGLOBAL (name, x))
         | F.DEFINE (fun_name, (formals, x)) => let val fun_env = Env.bind (fun_name, 0, env)
                                                   in
